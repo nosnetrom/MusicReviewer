@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MusicReviewer.Domain\MusicReviewer.Domain.csproj" />
+    <ProjectReference Include="..\..\src\MusicReviewer.Application\MusicReviewer.Application.csproj" />
+  </ItemGroup>
+
+</Project>

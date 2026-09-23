@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MusicReviewer.Domain\MusicReviewer.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

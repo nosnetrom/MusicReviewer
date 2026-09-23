@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore MusicReviewer.slnx
+      - run: dotnet build MusicReviewer.slnx --no-restore --configuration Release
+      # Integration tests start SQL Server via Testcontainers; Docker is available on ubuntu-latest.
+      - run: dotnet test --solution MusicReviewer.slnx --no-build --configuration Release
+
+  web:
+    name: Web (Vue)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/musicreviewer-web
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: src/musicreviewer-web/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint:check
+      - run: npm run format:check
+      - run: npm run test:unit -- --run
+      - run: npm run build

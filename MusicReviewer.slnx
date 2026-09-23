@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MusicReviewer.Api/MusicReviewer.Api.csproj" />
+    <Project Path="src/MusicReviewer.Application/MusicReviewer.Application.csproj" />
+    <Project Path="src/MusicReviewer.Domain/MusicReviewer.Domain.csproj" />
+    <Project Path="src/MusicReviewer.Infrastructure/MusicReviewer.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MusicReviewer.IntegrationTests/MusicReviewer.IntegrationTests.csproj" />
+    <Project Path="tests/MusicReviewer.UnitTests/MusicReviewer.UnitTests.csproj" />
+  </Folder>
+</Solution>
