@@ -1,0 +1,90 @@
+/*
+ * The glass material. Layers, back to front:
+ *   1. backdrop-filter  – blurs and saturates whatever is behind the element
+ *   2. background       – translucent fill, optionally tinted via --glass-tint
+ *   3. ::after (z -1)   – top sheen, a soft specular gradient under the content
+ *   4. ::before         – 1px specular rim, a gradient border drawn with a mask
+ *
+ * Usage: class="glass glass--2" and optionally style="--glass-tint: <color>".
+ */
+
+.glass {
+  --_fill: var(--glass-fill-1);
+  --_blur: var(--glass-blur-1);
+  --_shadow: var(--glass-shadow-1);
+
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--glass-radius, var(--radius-lg));
+  background: color-mix(
+    in oklab,
+    var(--glass-tint, transparent) var(--glass-tint-strength),
+    var(--_fill)
+  );
+  -webkit-backdrop-filter: blur(var(--_blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--_blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--_shadow);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-spring);
+}
+
+.glass::before,
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.glass::before {
+  padding: 1px;
+  background: var(--glass-rim);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.glass::after {
+  z-index: -1;
+  background: var(--glass-sheen);
+}
+
+.glass--2 {
+  --_fill: var(--glass-fill-2);
+  --_blur: var(--glass-blur-2);
+  --_shadow: var(--glass-shadow-2);
+}
+
+.glass--3 {
+  --_fill: var(--glass-fill-3);
+  --_blur: var(--glass-blur-3);
+  --_shadow: var(--glass-shadow-3);
+}
+
+/* Hover lift for clickable glass (cards, tiles). */
+.glass--interactive {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .glass--interactive:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: var(--glass-shadow-2);
+  }
+}
+
+.glass--interactive:active {
+  transform: scale(0.98);
+}
+
+/* Browsers without backdrop-filter get a denser fill so text stays legible. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: color-mix(in oklab, var(--color-surface-solid) 88%, transparent);
+  }
+}

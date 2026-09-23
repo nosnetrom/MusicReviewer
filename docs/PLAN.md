@@ -1,6 +1,6 @@
 # MusicReviewer — Application Plan
 
-> Status: **v0.3**. Decisions are recorded in [§10](#10-decisions). **Phase 0 (scaffold) is complete**; Phase 1 (Glass UI shell) is next.
+> Status: **v0.3**. Decisions are recorded in [§10](#10-decisions). **Phases 0 (scaffold) and 1 (Glass UI shell) are complete**; Phase 2 (catalog) is next.
 
 ## 1. Product summary
 
@@ -172,7 +172,7 @@ v2 adds: `AppUser`, `Review`, `Follow`, `EmailPreference`, `EmailLog`.
 | Phase | Scope | Exit criteria |
 |---|---|---|
 | **0 · Scaffold** ✅ | Solution and projects, Vue app, Vite proxy, EF Core + LocalDB, health endpoint, lint/format, GitHub Actions CI | `dotnet test` and `npm run build` pass; the SPA calls `/api/health` |
-| **1 · Glass UI shell** | Design tokens, glass components, layout, routing, placeholder views, light and dark themes | A component showcase page works; reduced-transparency mode works |
+| **1 · Glass UI shell** ✅ | Design tokens, glass components, layout, routing, placeholder views, light and dark themes | A component showcase page works; reduced-transparency mode works |
 | **2 · Catalog** | MusicBrainz, CAA and Wikidata clients; ingestion jobs; search; artist and recording pages | Searching for any well-known artist shows ranked albums with art and tracks |
 | **3 · Wikipedia summaries** | Wikipedia client, linking via Wikidata, summary storage and refresh, attribution UI | The top recordings show Wikipedia summaries with attribution |
 | **4 · Azure deploy** | Bicep (SQL, App Service, SWA, Key Vault, App Insights), managed identities, `deploy.yml` | Merging to `main` deploys to dev |

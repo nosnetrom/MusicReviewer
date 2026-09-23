@@ -2,10 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Search famous musicians and explore summaries of their major recordings.">
     <title>MusicReviewer</title>
+    <script>
+      // Apply saved display preferences before first paint (kept in sync with stores/preferences.js).
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicreviewer:preferences') || '{}')
+        if (saved.theme === 'light' || saved.theme === 'dark') document.documentElement.dataset.theme = saved.theme
+        if (saved.reduceTransparency === true) document.documentElement.dataset.transparency = 'reduced'
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="app"></div>
