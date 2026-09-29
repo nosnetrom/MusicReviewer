@@ -130,17 +130,47 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
-    public async Task Browse_shows_at_most_three_albums_per_artist()
+    public async Task Browse_pages_through_a_genre_with_load_more()
     {
         await EventuallyAsync<ArtistDetailDto>($"/api/artists/{FakeMusicBrainz.MilesDavis}", a => a.SyncStatus == SyncStatus.Ready);
 
-        var jazz = await GetAsync<BrowseRecordingsDto>("/api/browse/recordings?genre=jazz");
+        // Miles Davis has 27 studio albums in the fake catalog.
+        var first = await GetAsync<BrowseRecordingsDto>("/api/browse/recordings?genre=jazz&limit=10");
+        Assert.NotNull(first);
+        Assert.Equal(0, first.Offset);
+        Assert.Equal(10, first.Recordings.Count);
+        Assert.Equal(27, first.Total);
+        Assert.True(first.HasMore);
+        Assert.Equal("Kind of Blue", first.Recordings[0].Title);
 
-        // Miles Davis has 27 studio albums in the fake catalog; browse keeps his top three.
-        var miles = jazz!.Recordings.Where(r => r.ArtistMbid == FakeMusicBrainz.MilesDavis).ToList();
-        Assert.Equal(CatalogService.MaxBrowseRecordingsPerArtist, miles.Count);
-        Assert.Equal("Kind of Blue", miles[0].Title);
-        Assert.All(jazz.Recordings.GroupBy(r => r.ArtistMbid), g => Assert.True(g.Count() <= CatalogService.MaxBrowseRecordingsPerArtist));
+        var seen = first.Recordings.Select(r => r.Mbid).ToList();
+        var offset = first.Recordings.Count;
+        BrowseRecordingsDto? page;
+        do
+        {
+            page = await GetAsync<BrowseRecordingsDto>($"/api/browse/recordings?genre=jazz&limit=10&offset={offset}");
+            seen.AddRange(page!.Recordings.Select(r => r.Mbid));
+            offset += page.Recordings.Count;
+        }
+        while (page.HasMore);
+
+        Assert.Equal(27, seen.Count);
+        Assert.Equal(27, seen.Distinct().Count());
+
+        var full = await GetAsync<BrowseRecordingsDto>("/api/browse/recordings?genre=jazz");
+        Assert.Equal(27, full!.Recordings.Count); // default page of 60 holds them all
+        Assert.False(full.HasMore);
+    }
+
+    [Theory]
+    [InlineData("?limit=0")]
+    [InlineData("?limit=61")]
+    [InlineData("?offset=-1")]
+    public async Task Invalid_browse_paging_is_400(string query)
+    {
+        var response = await _client.GetAsync($"/api/browse/recordings{query}", Ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

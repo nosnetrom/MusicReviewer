@@ -7,6 +7,7 @@ import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassPanel from '@/components/glass/GlassPanel.vue'
 import CoverArt from '@/components/music/CoverArt.vue'
 import CreditList from '@/components/music/CreditList.vue'
+import ListenLinks from '@/components/music/ListenLinks.vue'
 import TrackList from '@/components/music/TrackList.vue'
 import { getRecording, isSettled } from '@/api/catalog'
 import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
@@ -93,6 +94,13 @@ useCoverBackdrop(
           </a>
         </template>
         <p v-else class="text-secondary">No Wikipedia article is linked to this recording.</p>
+      </GlassPanel>
+
+      <GlassPanel class="recording__panel">
+        <ListenLinks
+          :artist="recording.artistCredit ?? recording.artistName"
+          :title="recording.title"
+        />
       </GlassPanel>
 
       <GlassPanel class="recording__panel">

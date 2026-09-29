@@ -24,9 +24,9 @@ public static class CatalogEndpoints
 
         api.MapGet("/genres", (CatalogService catalog, CancellationToken ct) => catalog.GetGenresAsync(ct));
 
-        api.MapGet("/browse/recordings", (string? genre, string? decade, CatalogService catalog, CancellationToken ct) =>
-                catalog.BrowseRecordingsAsync(genre, decade, ct))
-            .WithSummary("Studio albums across imported artists, filtered by genre slug and/or decade (e.g. 1970s).");
+        api.MapGet("/browse/recordings", BrowseRecordingsAsync)
+            .WithSummary("Studio albums across imported artists, filtered by genre slug and/or decade (e.g. 1970s). " +
+                "Paged: offset (default 0) and limit (1–60, default 60).");
 
         return app;
     }
@@ -47,6 +47,19 @@ public static class CatalogEndpoints
             return TypedResults.ValidationProblem(errors);
 
         return TypedResults.Ok(await catalog.GetArtistRecordingsAsync(mbid, filter, order, ct));
+    }
+
+    private static async Task<IResult> BrowseRecordingsAsync(string? genre, string? decade, int? offset, int? limit, CatalogService catalog, CancellationToken ct)
+    {
+        var errors = new Dictionary<string, string[]>();
+        if (offset < 0)
+            errors["offset"] = ["Must be 0 or more."];
+        if (limit is < 1 or > CatalogService.BrowsePageSize)
+            errors["limit"] = [$"Must be between 1 and {CatalogService.BrowsePageSize}."];
+        if (errors.Count > 0)
+            return TypedResults.ValidationProblem(errors);
+
+        return TypedResults.Ok(await catalog.BrowseRecordingsAsync(genre, decade, offset ?? 0, limit, ct));
     }
 
     /// <summary>Parses an enum by name only, so numeric strings like "3" are rejected.</summary>

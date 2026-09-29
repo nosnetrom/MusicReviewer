@@ -58,9 +58,16 @@ export const getFeatured = (options) => getJson('/api/browse/featured', options)
 /** @returns {Promise<{ name: string, slug: string, artistCount: number }[]>} */
 export const getGenres = (options) => getJson('/api/genres', options)
 
-/** @returns {Promise<{ genre: string | null, decade: string | null, recordings: RecordingSummary[] }>} */
-export const browseRecordings = ({ genre, decade } = {}, options) =>
-  getJson(`/api/browse/recordings${query({ genre, decade })}`, options)
+/**
+ * One page of studio albums, each artist's top three first. Pages hold up to 60 albums.
+ * @param {{ genre?: string | null, decade?: string | null, offset?: number, limit?: number }} [filters]
+ * @returns {Promise<{ genre: string | null, decade: string | null, recordings: RecordingSummary[], offset: number, total: number, hasMore: boolean }>}
+ */
+export const browseRecordings = ({ genre, decade, offset, limit } = {}, options) =>
+  getJson(
+    `/api/browse/recordings${query({ genre, decade, offset: offset || undefined, limit })}`,
+    options,
+  )
 
 /** True once an import has finished, successfully or not. */
 export const isSettled = (status) => status === 'ready' || status === 'failed'

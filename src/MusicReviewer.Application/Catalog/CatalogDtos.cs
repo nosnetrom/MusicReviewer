@@ -73,7 +73,15 @@ public sealed record FeaturedDto(IReadOnlyList<ArtistSummaryDto> Artists, IReadO
 
 public sealed record GenreListItemDto(string Name, string Slug, int ArtistCount);
 
-public sealed record BrowseRecordingsDto(string? Genre, string? Decade, IReadOnlyList<RecordingSummaryDto> Recordings);
+/// <param name="Offset">Position of the first recording in the full ranked list.</param>
+/// <param name="Total">Recordings matching the filters, across all pages.</param>
+public sealed record BrowseRecordingsDto(
+    string? Genre,
+    string? Decade,
+    IReadOnlyList<RecordingSummaryDto> Recordings,
+    int Offset,
+    int Total,
+    bool HasMore);
 
 /// <summary>Which of an artist's recordings to list.</summary>
 public enum RecordingFilter

@@ -26,11 +26,12 @@ public sealed partial class CatalogService(
 {
     private const int MaxSearchResults = 12;
     private const int MaxFeaturedRecordings = 24;
-    private const int MaxBrowseRecordings = 48;
+    /// <summary>Albums per browse page; "Load more" fetches the next page.</summary>
+    public const int BrowsePageSize = 60;
     public const int MaxBrowseRecordingsPerArtist = 3;
 
-    /// <summary>Candidates considered before the per-artist cap is applied.</summary>
-    private const int BrowseCandidates = 600;
+    /// <summary>Upper bound on albums considered for one browse view.</summary>
+    private const int BrowseCandidates = 5000;
     private const int MaxGenres = 40;
 
     private static readonly string[] RoleOrder =
@@ -224,7 +225,7 @@ public sealed partial class CatalogService(
         return [.. genres.Select(g => new GenreListItemDto(g.Name, g.Slug, g.Count))];
     }
 
-    public async Task<BrowseRecordingsDto> BrowseRecordingsAsync(string? genre, string? decade, CancellationToken cancellationToken)
+    public async Task<BrowseRecordingsDto> BrowseRecordingsAsync(string? genre, string? decade, int offset, int? limit, CancellationToken cancellationToken)
     {
         var query = db.Recordings.AsNoTracking()
             .Where(r => r.Artist.LastSyncedUtc != null
@@ -243,23 +244,44 @@ public sealed partial class CatalogService(
             .Select(ToRecordingSummary)
             .ToListAsync(cancellationToken);
 
-        // Keep the notability order, but no more than a few albums per artist so one
-        // well-documented artist can't fill the whole view.
-        var perArtist = new Dictionary<Guid, int>();
-        var recordings = new List<RecordingSummaryDto>(MaxBrowseRecordings);
-        foreach (var recording in candidates)
-        {
-            var count = perArtist.GetValueOrDefault(recording.ArtistMbid);
-            if (count >= MaxBrowseRecordingsPerArtist)
-                continue;
+        var ranked = RankForBrowse(candidates);
+        var first = Math.Max(0, offset);
+        var size = Math.Clamp(limit ?? BrowsePageSize, 1, BrowsePageSize);
+        var page = ranked.Skip(first).Take(size).ToList();
 
-            perArtist[recording.ArtistMbid] = count + 1;
-            recordings.Add(recording);
-            if (recordings.Count == MaxBrowseRecordings)
-                break;
-        }
+        return new BrowseRecordingsDto(
+            genre,
+            decadeStart is null ? null : $"{decadeStart}s",
+            page,
+            first,
+            ranked.Count,
+            HasMore: first + page.Count < ranked.Count);
+    }
 
-        return new BrowseRecordingsDto(genre, decadeStart is null ? null : $"{decadeStart}s", recordings);
+    /// <summary>
+    /// Orders browse results in rounds of <see cref="MaxBrowseRecordingsPerArtist"/> albums per artist:
+    /// every artist's top three (by notability) first, then everyone's next three, and so on. The first
+    /// page never shows more than three albums by one artist, and "Load more" reaches every artist
+    /// before repeating one.
+    /// </summary>
+    /// <param name="byNotability">Recordings already sorted most notable first.</param>
+    public static List<RecordingSummaryDto> RankForBrowse(IEnumerable<RecordingSummaryDto> byNotability)
+    {
+        var seen = new Dictionary<Guid, int>();
+        return
+        [
+            .. byNotability
+                .Select((recording, index) =>
+                {
+                    var rankForArtist = seen.GetValueOrDefault(recording.ArtistMbid);
+                    seen[recording.ArtistMbid] = rankForArtist + 1;
+                    return (recording, index, round: rankForArtist / MaxBrowseRecordingsPerArtist);
+                })
+                .ToList()
+                .OrderBy(x => x.round)
+                .ThenBy(x => x.index)
+                .Select(x => x.recording),
+        ];
     }
 
     private static int FamilyOrder(string slug)
