@@ -293,7 +293,7 @@ Other services called during an artist import (not subject to the MusicBrainz li
 
 - **API:** `dotnet run --project src/MusicReviewer.Api`
 - **Web:** `npm run dev` in `src/musicreviewer-web`. Vite proxies `/api` to the API.
-- **DB:** SQL Server LocalDB (`(localdb)\MSSQLLocalDB`), set up with `dotnet ef database update`. On first run in Development, the API applies migrations automatically.
+- **DB:** SQL Server LocalDB (`(localdb)\MSSQLLocalDB`) on Windows; on macOS or Linux, the SQL Server 2022 container in `compose.yaml`, with the connection string in user secrets (see the README). On first run in Development, the API applies migrations automatically.
 - **Secrets:** `dotnet user-secrets`.
 
 ---

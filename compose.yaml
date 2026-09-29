@@ -1,0 +1,27 @@
+# Local SQL Server for development on macOS or Linux (LocalDB is Windows-only).
+#   1. Put a strong password in .env (git-ignored):  MSSQL_SA_PASSWORD=<password>
+#   2. docker compose up -d
+#   3. Point the API at it; see "Database on macOS or Linux" in README.md.
+# Data lives in the "musicreviewer-sql" volume; `docker compose down -v` deletes it.
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # The image is x86-64 only. On Apple Silicon, Docker Desktop needs Rosetta emulation turned on.
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "1433:1433"
+    volumes:
+      - musicreviewer-sql:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  musicreviewer-sql:

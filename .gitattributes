@@ -1,0 +1,14 @@
+# Store and check out text files with LF endings on every OS, whatever core.autocrlf says,
+# so Windows and macOS clones don't fight over line endings.
+* text=auto eol=lf
+
+# Binary files: never convert or diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.bacpac binary
