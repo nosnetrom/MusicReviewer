@@ -50,4 +50,8 @@ public sealed record TrackInfo(int DiscNumber, int Position, string Title, int? 
 
 public sealed record CreditInfo(string PersonName, string Role, string? Instrument);
 
+/// <param name="Title">The article's canonical title, after following redirects.</param>
+/// <param name="Extract">Plain text of the lead section; paragraphs separated by newlines.</param>
+public sealed record WikipediaLead(string Title, string Url, long RevisionId, string Extract);
+
 public sealed record WikidataLink(string WikidataId, string? EnglishWikipediaTitle, int Sitelinks);

@@ -16,12 +16,15 @@ public static class DependencyInjection
         services.AddScoped<CatalogService>();
         services.AddScoped<FeaturedArtistSeeder>();
         services.AddScoped<GenreReclassifier>();
+        services.AddScoped<WikipediaBackfill>();
+        services.AddScoped<WikipediaSummaries>();
         services.AddScoped<ArtistImporter>();
 
         services.AddScoped<IIngestionJobHandler, ArtistDiscographyJobHandler>();
         services.AddScoped<IIngestionJobHandler, ArtistReleaseCategoryJobHandler>();
         services.AddScoped<IIngestionJobHandler, RecordingDetailsJobHandler>();
         services.AddScoped<IIngestionJobHandler, ArtistGenresJobHandler>();
+        services.AddScoped<IIngestionJobHandler, WikipediaSummaryJobHandler>();
 
         return services;
     }

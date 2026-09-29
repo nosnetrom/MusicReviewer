@@ -40,9 +40,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.RemoveAll<IMusicBrainzClient>();
             services.RemoveAll<IWikidataClient>();
             services.RemoveAll<ICoverArtClient>();
+            services.RemoveAll<IWikipediaClient>();
             services.AddSingleton<IMusicBrainzClient>(MusicBrainz);
             services.AddSingleton<IWikidataClient, FakeWikidata>();
             services.AddSingleton<ICoverArtClient, FakeCoverArt>();
+            services.AddSingleton<IWikipediaClient, FakeWikipedia>();
         });
     }
 

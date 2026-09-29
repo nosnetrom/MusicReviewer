@@ -9,7 +9,7 @@ using MusicReviewer.Infrastructure.MusicBrainz;
 namespace MusicReviewer.IntegrationTests;
 
 /// <summary>
-/// Calls the real MusicBrainz, Wikidata and Cover Art Archive through the production HTTP
+/// Calls the real MusicBrainz, Wikidata, Cover Art Archive and Wikipedia through the production HTTP
 /// pipeline. Explicit: skipped by default and in CI; run with
 /// <c>dotnet test --project tests/MusicReviewer.IntegrationTests -- --explicit only</c>.
 /// </summary>
@@ -49,6 +49,11 @@ public class LiveSourcesSmokeTests
 
             var cover = await provider.GetRequiredService<ICoverArtClient>().GetFrontCoverUrlAsync(KindOfBlue, ct);
             Assert.NotNull(cover);
+
+            var leads = await provider.GetRequiredService<IWikipediaClient>().GetLeadsAsync(["Kind of Blue"], ct);
+            var lead = leads["Kind of Blue"];
+            Assert.Equal("https://en.wikipedia.org/wiki/Kind_of_Blue", lead.Url);
+            Assert.StartsWith("Kind of Blue is a studio album", lead.Extract);
         }
         finally
         {

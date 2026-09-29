@@ -17,6 +17,7 @@ const links = [
 ]
 
 const isDev = import.meta.env.DEV
+const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -41,6 +42,7 @@ const isDev = import.meta.env.DEV
       <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
     </p>
     <div class="app-footer__meta">
+      <span>Copyright © {{ year }}, Nosnetrom</span>
       <ApiStatus />
       <RouterLink v-if="isDev" to="/design">Design system</RouterLink>
     </div>

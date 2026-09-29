@@ -63,6 +63,13 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
         var detail = await GetAsync<ArtistDetailDto>($"/api/artists/{mbid}");
         Assert.Equal(SyncStatus.Ready, detail!.SyncStatus);
         Assert.Equal("Miles Davis", detail.WikipediaTitle);
+
+        // The bio arrives with the import, from the article Wikidata links to.
+        Assert.NotNull(detail.Summary);
+        Assert.Equal("https://en.wikipedia.org/wiki/Miles_Davis", detail.Summary.Url);
+        Assert.Equal(1001, detail.Summary.RevisionId);
+        Assert.Equal(2, detail.Summary.Paragraphs.Count);
+        Assert.StartsWith("Miles Dewey Davis III", detail.Summary.Paragraphs[0]);
     }
 
     [Fact]
@@ -94,6 +101,11 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
         Assert.Equal(["Performer", "Producer"], recording.Credits.Select(g => g.Role));
         var performers = recording.Credits[0].People;
         Assert.Contains(performers, p => p is { Name: "John Coltrane", Instruments: "tenor saxophone" });
+
+        Assert.NotNull(recording.Summary);
+        Assert.Equal("Kind of Blue", recording.Summary.Title);
+        Assert.Equal(["Kind of Blue is a studio album by American jazz musician Miles Davis.", "It is regarded as one of the greatest jazz records."],
+            recording.Summary.Paragraphs);
     }
 
     [Fact]

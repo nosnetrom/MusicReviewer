@@ -11,6 +11,7 @@ using MusicReviewer.Infrastructure.Ingestion;
 using MusicReviewer.Infrastructure.MusicBrainz;
 using MusicReviewer.Infrastructure.Persistence;
 using MusicReviewer.Infrastructure.Wikidata;
+using MusicReviewer.Infrastructure.Wikipedia;
 using Polly;
 
 namespace MusicReviewer.Infrastructure;
@@ -93,6 +94,23 @@ public static class DependencyInjection
                 http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.UserAgent);
                 http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/sparql-results+json"));
             })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(40);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+            });
+
+        services.AddOptions<WikipediaOptions>().BindConfiguration(WikipediaOptions.SectionName);
+        services
+            .AddHttpClient<IWikipediaClient, WikipediaClient>((sp, http) =>
+            {
+                var options = sp.GetRequiredService<IOptions<WikipediaOptions>>().Value;
+                http.BaseAddress = options.ApiEndpoint;
+                http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.UserAgent);
+                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            // A batch of 20 full leads can take longer than the 10s default to generate.
             .AddStandardResilienceHandler(options =>
             {
                 options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(20);

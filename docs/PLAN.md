@@ -1,6 +1,6 @@
 # MusicReviewer — Application Plan
 
-> Status: **v0.3**. Decisions are recorded in [§10](#10-decisions). **Phases 0–2 (scaffold, Glass UI shell, catalog) are complete**; Phase 3 (Wikipedia summaries) is next.
+> Status: **v0.4**. Decisions are recorded in [§10](#10-decisions). **Phases 0–3 (scaffold, Glass UI shell, catalog, Wikipedia summaries) are complete**; Phase 4 (Azure deploy) is next.
 
 ## 1. Product summary
 
@@ -77,11 +77,11 @@ We **ingest from open sources and cache what we get in Azure SQL**.
 
 ## 4. Summaries (Wikipedia)
 
-- Recordings are linked to Wikipedia through the MusicBrainz release group, then its Wikidata item, then the `enwiki` sitelink. If no Wikidata link exists, we fall back to a title search.
-- The summary text is the article's **lead section** as plain text, fetched from the `/page/summary` REST endpoint (the short version) or from `action=query&prop=extracts&exintro` (the full lead).
-- We store the extract, the article URL, the revision ID and the fetched-at time. Extracts are refreshed when the stored revision is out of date.
-- The UI shows: *"Summary from Wikipedia, licensed under CC BY-SA 4.0"* with a link to the article.
-- When a recording has no article, the page shows its MusicBrainz facts only, with a "No Wikipedia summary available" note.
+- Artists and recordings are linked to Wikipedia through their MusicBrainz ID, then the Wikidata item, then the `enwiki` sitelink. **There is no title-search fallback**: a guessed article is too often the wrong album.
+- The summary text is the article's **lead section** as plain text, from the MediaWiki Action API (`action=query&prop=extracts&exintro&explaintext`), up to 20 articles per request. Redirects are followed; missing and disambiguation pages are skipped.
+- We store the extract, the article URL, the revision ID and the fetched-at time. Summaries older than 30 days are re-checked; the text is replaced only when the revision has changed.
+- The UI shows the first paragraph (or two, when the first is short) with **Read more** for the rest of the lead, then: *"Excerpt from Wikipedia's article "X", available under CC BY-SA 4.0"*, linking to the article and the licence.
+- When a recording has no article, the page shows its MusicBrainz facts only, with a "No Wikipedia article is linked" note. When an article is linked but has no usable lead, the page links to it instead.
 
 ---
 
@@ -125,7 +125,7 @@ MusicReviewer/
 | GET | `/api/search?q=` | Artist search |
 | GET | `/api/artists/{mbid}` | Artist details, genres and sync status |
 | GET | `/api/artists/{mbid}/recordings?type=studio\|live\|compilation\|ep\|all&sort=notability\|date` | Ranked major recordings |
-| GET | `/api/recordings/{mbid}` | Recording details, tracks, credits, sync status (Wikipedia summary in Phase 3) |
+| GET | `/api/recordings/{mbid}` | Recording details, tracks, credits, sync status and Wikipedia summary |
 | GET | `/api/browse/featured`, `/api/genres`, `/api/browse/recordings?genre=&decade=` | Browse imported data |
 
 Routes use **MusicBrainz IDs** (MBIDs), which are stable and shareable. Pages also work for artists that haven't been imported yet. Paging uses `?page=&pageSize=`. Errors use RFC 7807 ProblemDetails: 404 when MusicBrainz reports the item doesn't exist, 503 with `Retry-After` when MusicBrainz is unavailable.
@@ -187,7 +187,7 @@ v2 adds: `AppUser`, `Review`, `Follow`, `EmailPreference`, `EmailLog`.
 | **0 · Scaffold** ✅ | Solution and projects, Vue app, Vite proxy, EF Core + LocalDB, health endpoint, lint/format, GitHub Actions CI | `dotnet test` and `npm run build` pass; the SPA calls `/api/health` |
 | **1 · Glass UI shell** ✅ | Design tokens, glass components, layout, routing, placeholder views, light and dark themes | A component showcase page works; reduced-transparency mode works |
 | **2 · Catalog** ✅ | MusicBrainz, CAA and Wikidata clients; **single MusicBrainz worker**; ingestion jobs; search; artist and recording pages; seed artists (see below) | Searching for any well-known artist shows ranked albums with art and tracks; CI passes with no external calls |
-| **3 · Wikipedia summaries** | Wikipedia client, linking via Wikidata, summary storage and refresh, attribution UI | The top recordings show Wikipedia summaries with attribution |
+| **3 · Wikipedia summaries** ✅ | Wikipedia client, linking via Wikidata, summary storage and refresh, attribution UI | The top recordings show Wikipedia summaries with attribution |
 | **4 · Azure deploy** | Bicep (SQL, App Service, SWA, Key Vault, App Insights), managed identities, `deploy.yml`; **move the MusicBrainz worker into its own single-instance process** (see below) | Merging to `main` deploys to dev; the API can scale out while MusicBrainz traffic stays at 1 req/sec |
 | **5 · Polish** | Refraction effects, view transitions, performance budget, accessibility audit | Lighthouse ≥ 90 for performance and accessibility |
 | **v2** | Entra External ID, reviews, follows, ACS email, admin | — |
@@ -262,6 +262,31 @@ Other services called during an artist import (not subject to the MusicBrainz li
 **Phase 2 follow-ups**
 - **Cover art is slow to appear** (4–9s). The Cover Art Archive redirects to archive.org, which responds slowly. Caching thumbnails in Azure Blob Storage behind a CDN during import would make covers appear immediately. This fits with Phase 4 (Azure).
 - **Stale data refreshes when viewed.** There is no nightly refresh job yet.
+
+### Phase 3 · Wikipedia summaries
+
+**When summaries are fetched** (none of this uses the MusicBrainz limit)
+- **Artist bio:** during the artist import, right after the Wikidata link is found, so it appears before the albums finish.
+- **Studio albums:** in one batch after the studio import; Live and Compilations after their on-demand imports.
+- **Any recording:** again when its details are imported, before the page is marked ready.
+- **Backfill:** at startup, a low-priority `WikipediaSummary` job is queued for each imported artist whose bio or album summaries are missing or older than 30 days.
+
+**Backend**
+- `IWikipediaClient` / `WikipediaClient`: batched Action API calls with the repo User-Agent and the standard resilience handler.
+- `WikipediaSummaries`: groups items by article title, fetches in chunks of 20, compares revisions, and logs and skips a failed batch.
+- Stored in the existing `Wikipedia_*` columns on Artists and Recordings, so no migration is needed.
+- `summary` (title, URL, revision, fetched time, paragraphs) is added to the artist and recording detail responses.
+
+**Frontend**
+- `WikipediaSummary.vue`: lead paragraphs, a Read more / Show less toggle (`aria-expanded`), and CC BY-SA attribution.
+- Artist page: the bio sits in the header, replacing the plain Wikipedia link.
+- Recording page: the About panel shows the summary, a "Fetching…" note while the import runs, or the fallbacks above.
+
+**Testing**
+- **Unit:** mapping a recorded Action API response (redirects, normalisation, missing and disambiguation pages); refresh rules (batching, unchanged revisions, failed batches).
+- **Integration:** a fake Wikipedia client; summaries appear on the artist and recording endpoints.
+- **Live smoke test:** also fetches the Kind of Blue lead.
+- **Web:** the paragraph cut-off, the toggle and the attribution.
 ---
 
 ## 9. Local development
@@ -292,3 +317,8 @@ Other services called during an artist import (not subject to the MusicBrainz li
 | 13 | MusicBrainz list and search calls return **up to 25 items per request** (`MusicBrainz:PageSize`). This was changed from 10. |
 | 14 | **All MusicBrainz calls go through one worker**: in-process in Phase 2, a separate single-instance process in Phase 4. |
 | 15 | Browsing uses **12 broad genres** (Jazz, Blues, Rock, Pop, Soul & R&B, Funk & Disco, Hip-Hop, Country, Folk, Electronic, Reggae & Ska, Gospel). Each MusicBrainz tag maps onto them, and an artist gets up to 3 based on their share of the votes. The specific tags are kept as the artist's **styles**. |
+| 16 | Summaries show the **first paragraph or two**; **Read more** expands the rest of the lead. |
+| 17 | **Artist bios** come from Wikipedia too, as well as recording summaries. |
+| 18 | **No artist photos** for now. |
+| 19 | **No title-search fallback**: only articles linked through Wikidata are used. |
+| 20 | Summaries are **plain text** only (no HTML from Wikipedia). |

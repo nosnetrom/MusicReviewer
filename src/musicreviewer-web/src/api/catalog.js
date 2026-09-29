@@ -24,6 +24,14 @@ import { getJson } from './client'
  * @property {number | null} year
  * @property {string | null} coverArtUrl
  * @property {boolean} hasWikipediaArticle
+ *
+ * The plain-text lead of a Wikipedia article (CC BY-SA 4.0; attribute when shown).
+ * @typedef {object} WikipediaSummary
+ * @property {string} title
+ * @property {string} url
+ * @property {number} revisionId
+ * @property {string} fetchedUtc
+ * @property {string[]} paragraphs
  */
 
 /** @typedef {{ signal?: AbortSignal }} RequestOptions */
@@ -43,6 +51,7 @@ export const searchArtists = (q, options) => getJson(`/api/search${query({ q })}
 /** @returns {Promise<{ name: string, genres: string[] }[]>} imported artists, for example searches */
 export const getSearchSuggestions = (options) => getJson('/api/search/suggestions', options)
 
+/** @returns {Promise<ArtistSummary & { syncStatus: SyncStatus, wikipediaTitle: string | null, summary: WikipediaSummary | null }>} plus genres, styles and counts */
 export const getArtist = (mbid, options) => getJson(`/api/artists/${mbid}`, options)
 
 /**
@@ -53,6 +62,7 @@ export const getArtist = (mbid, options) => getJson(`/api/artists/${mbid}`, opti
 export const getArtistRecordings = (mbid, { type, sort } = {}, options) =>
   getJson(`/api/artists/${mbid}/recordings${query({ type, sort })}`, options)
 
+/** @returns {Promise<RecordingSummary & { detailsStatus: SyncStatus, wikipediaTitle: string | null, summary: WikipediaSummary | null }>} plus tracks and credits */
 export const getRecording = (mbid, options) => getJson(`/api/recordings/${mbid}`, options)
 
 /** @returns {Promise<{ artists: ArtistSummary[], recordings: RecordingSummary[] }>} */

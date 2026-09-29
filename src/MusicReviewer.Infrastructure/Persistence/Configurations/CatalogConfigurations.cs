@@ -92,5 +92,6 @@ internal static class WikipediaArticleMapping
     {
         wiki.Property(w => w.PageTitle).HasMaxLength(400);
         wiki.Property(w => w.PageUrl).HasMaxLength(2048);
+        wiki.Ignore(w => w.Paragraphs);
     }
 }

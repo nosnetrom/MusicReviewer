@@ -7,6 +7,7 @@ import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassChip from '@/components/glass/GlassChip.vue'
 import GlassPanel from '@/components/glass/GlassPanel.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
+import WikipediaSummary from '@/components/music/WikipediaSummary.vue'
 import { getArtist, getArtistRecordings, isSettled } from '@/api/catalog'
 import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
 import { usePolling } from '@/composables/usePolling'
@@ -124,8 +125,13 @@ useCoverBackdrop(() => {
           <span class="artist__styles-label">Styles</span> {{ styles.join(' · ') }}
         </p>
 
+        <WikipediaSummary
+          v-if="artist.data.value.summary"
+          :summary="artist.data.value.summary"
+          class="artist__bio"
+        />
         <a
-          v-if="artist.data.value.wikipediaTitle"
+          v-else-if="artist.data.value.wikipediaTitle"
           :href="wikipediaUrl(artist.data.value.wikipediaTitle)"
           class="artist__wikipedia"
           target="_blank"
@@ -257,6 +263,10 @@ useCoverBackdrop(() => {
 .artist__wikipedia {
   font-size: var(--font-size-sm);
   font-weight: 550;
+}
+
+.artist__bio {
+  margin-top: var(--space-2);
 }
 
 .artist__hero-placeholder {

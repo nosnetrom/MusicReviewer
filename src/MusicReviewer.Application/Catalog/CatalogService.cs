@@ -128,7 +128,7 @@ public sealed partial class CatalogService(
             artist.BeginYear, artist.EndYear, artist.WikipediaTitle,
             [.. artist.Genres.OrderBy(g => FamilyOrder(g.Slug)).Select(g => new GenreDto(g.Name, g.Slug))],
             string.IsNullOrEmpty(artist.Styles) ? [] : artist.Styles.Split(", "),
-            artist.SyncStatus, count);
+            artist.SyncStatus, count, WikipediaSummaryDto.From(artist.Wikipedia));
     }
 
     public async Task<ArtistRecordingsDto> GetArtistRecordingsAsync(Guid mbid, RecordingFilter filter, RecordingSort sort, CancellationToken cancellationToken)
@@ -195,7 +195,8 @@ public sealed partial class CatalogService(
             recording.PrimaryType, recording.Category, recording.FirstReleaseDate, recording.FirstReleaseYear, recording.Label,
             recording.CoverArtUrl, recording.WikipediaTitle, recording.DetailsSyncStatus,
             [.. recording.Tracks.OrderBy(t => t.DiscNumber).ThenBy(t => t.Position).Select(t => new TrackDto(t.DiscNumber, t.Position, t.Title, t.DurationMs))],
-            GroupCredits(recording.Credits));
+            GroupCredits(recording.Credits),
+            WikipediaSummaryDto.From(recording.Wikipedia));
     }
 
     // ---- Browse ------------------------------------------------------------------------

@@ -9,6 +9,7 @@ import CoverArt from '@/components/music/CoverArt.vue'
 import CreditList from '@/components/music/CreditList.vue'
 import ListenLinks from '@/components/music/ListenLinks.vue'
 import TrackList from '@/components/music/TrackList.vue'
+import WikipediaSummary from '@/components/music/WikipediaSummary.vue'
 import { getRecording, isSettled } from '@/api/catalog'
 import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
 import { usePolling } from '@/composables/usePolling'
@@ -87,12 +88,23 @@ useCoverBackdrop(
 
       <GlassPanel class="recording__panel">
         <h2 class="recording__panel-title">About this recording</h2>
-        <template v-if="recording.wikipediaTitle">
-          <p class="text-secondary">A summary from Wikipedia is coming soon.</p>
-          <a :href="wikipediaUrl(recording.wikipediaTitle)" target="_blank" rel="noopener">
-            Read “{{ recording.wikipediaTitle }}” on Wikipedia
-          </a>
-        </template>
+        <WikipediaSummary v-if="recording.summary" :summary="recording.summary" />
+        <p
+          v-else-if="recording.wikipediaTitle && !isSettled(recording.detailsStatus)"
+          class="text-secondary"
+          aria-busy="true"
+        >
+          Fetching the summary from Wikipedia…
+        </p>
+        <!-- Linked, but Wikipedia had no usable lead (for example, a disambiguation page). -->
+        <a
+          v-else-if="recording.wikipediaTitle"
+          :href="wikipediaUrl(recording.wikipediaTitle)"
+          target="_blank"
+          rel="noopener"
+        >
+          Read “{{ recording.wikipediaTitle }}” on Wikipedia
+        </a>
         <p v-else class="text-secondary">No Wikipedia article is linked to this recording.</p>
       </GlassPanel>
 

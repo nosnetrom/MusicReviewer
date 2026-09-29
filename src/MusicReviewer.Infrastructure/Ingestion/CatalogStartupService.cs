@@ -16,6 +16,9 @@ public sealed class CatalogStartupService(IServiceScopeFactory scopes, IOptions<
         await using (var scope = scopes.CreateAsyncScope())
             await scope.ServiceProvider.GetRequiredService<GenreReclassifier>().RunAsync(stoppingToken);
 
+        await using (var scope = scopes.CreateAsyncScope())
+            await scope.ServiceProvider.GetRequiredService<WikipediaBackfill>().RunAsync(stoppingToken);
+
         if (!options.Value.SeedFeaturedArtistsOnStartup || options.Value.FeaturedArtists.Count == 0)
             return;
 

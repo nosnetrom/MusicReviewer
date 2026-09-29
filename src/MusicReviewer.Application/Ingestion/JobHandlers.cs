@@ -6,11 +6,12 @@ using MusicReviewer.Domain.Ingestion;
 
 namespace MusicReviewer.Application.Ingestion;
 
-/// <summary>Artist details, Wikidata link, genres, and all studio albums and EPs.</summary>
+/// <summary>Artist details, Wikidata link, genres, Wikipedia summaries, and all studio albums and EPs.</summary>
 public sealed class ArtistDiscographyJobHandler(
     IMusicReviewerDbContext db,
     IMusicBrainzClient musicBrainz,
     ArtistImporter importer,
+    WikipediaSummaries summaries,
     TimeProvider clock) : IIngestionJobHandler
 {
     public IngestionJobType Type => IngestionJobType.ArtistDiscography;
@@ -39,9 +40,16 @@ public sealed class ArtistDiscographyJobHandler(
         ArtistMapping.Apply(artist, info);
         await ArtistMapping.ApplyGenresAsync(db, artist, info.Genres, cancellationToken);
         await importer.ApplyArtistWikidataAsync(artist, cancellationToken);
+        // The bio first, so the artist page has it while the albums are still importing.
+        await summaries.RefreshAsync([artist], cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
 
         await importer.ImportCategoryAsync(artist, ReleaseCategories.Studio, cancellationToken);
+
+        var withArticles = await db.Recordings
+            .Where(r => r.ArtistId == artist.Id && r.WikipediaTitle != null)
+            .ToListAsync(cancellationToken);
+        await summaries.RefreshAsync(withArticles, cancellationToken);
 
         artist.LastSyncedUtc = clock.GetUtcNow().UtcDateTime;
         artist.SyncStatus = SyncStatus.Ready;
@@ -81,8 +89,30 @@ public sealed class ArtistGenresJobHandler(IMusicReviewerDbContext db, IMusicBra
     public Task OnFailedAsync(IngestionJob job, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
+/// <summary>Refreshes the Wikipedia summaries of one artist and all their recordings.</summary>
+public sealed class WikipediaSummaryJobHandler(IMusicReviewerDbContext db, WikipediaSummaries summaries) : IIngestionJobHandler
+{
+    public IngestionJobType Type => IngestionJobType.WikipediaSummary;
+
+    public async Task HandleAsync(IngestionJob job, CancellationToken cancellationToken)
+    {
+        var artist = await db.Artists.FirstOrDefaultAsync(a => a.Id == job.TargetId, cancellationToken);
+        if (artist is null)
+            return;
+
+        var recordings = await db.Recordings
+            .Where(r => r.ArtistId == artist.Id && r.WikipediaTitle != null)
+            .ToListAsync(cancellationToken);
+
+        await summaries.RefreshAsync([artist, .. recordings], cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task OnFailedAsync(IngestionJob job, CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
 /// <summary>Live albums or compilations, imported only when a visitor asks for them.</summary>
-public sealed class ArtistReleaseCategoryJobHandler(IMusicReviewerDbContext db, ArtistImporter importer) : IIngestionJobHandler
+public sealed class ArtistReleaseCategoryJobHandler(IMusicReviewerDbContext db, ArtistImporter importer, WikipediaSummaries summaries) : IIngestionJobHandler
 {
     public IngestionJobType Type => IngestionJobType.ArtistReleaseCategory;
 
@@ -96,16 +126,22 @@ public sealed class ArtistReleaseCategoryJobHandler(IMusicReviewerDbContext db, 
             return;
 
         await importer.ImportCategoryAsync(artist, category, cancellationToken);
+
+        var needSummaries = await db.Recordings
+            .Where(r => r.ArtistId == artist.Id && r.WikipediaTitle != null && r.Wikipedia == null)
+            .ToListAsync(cancellationToken);
+        await summaries.RefreshAsync(needSummaries, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
     }
 
     public Task OnFailedAsync(IngestionJob job, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
-/// <summary>Track list, label and personnel from the recording's representative release.</summary>
+/// <summary>Track list, label and personnel from the recording's representative release, plus its Wikipedia summary.</summary>
 public sealed class RecordingDetailsJobHandler(
     IMusicReviewerDbContext db,
     IMusicBrainzClient musicBrainz,
+    WikipediaSummaries summaries,
     TimeProvider clock) : IIngestionJobHandler
 {
     public IngestionJobType Type => IngestionJobType.RecordingDetails;
@@ -160,6 +196,9 @@ public sealed class RecordingDetailsJobHandler(
             recording.Label = detail.Label ?? recording.Label;
             recording.RepresentativeReleaseId = detail.MusicBrainzId;
         }
+
+        // Before marking the details ready, so the summary appears with the track list.
+        await summaries.RefreshAsync([recording], cancellationToken);
 
         recording.DetailsSyncedUtc = clock.GetUtcNow().UtcDateTime;
         recording.DetailsSyncStatus = SyncStatus.Ready;

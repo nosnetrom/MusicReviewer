@@ -6,15 +6,21 @@ import AppLogo from '@/components/AppLogo.vue'
 
 /**
  * "← [logo] MusicReviewer" link back to Home, in the top-left corner on phones.
- * The nav bar moves to the bottom on phones, so this gives every page (except Home itself)
- * a familiar way back at the top. Hidden on wider screens, where the nav bar has the brand.
+ * The nav bar moves to the bottom on phones, so this gives every page a familiar way back
+ * at the top. On Home itself it is just the brand, with no arrow and no link.
+ * Hidden on wider screens, where the nav bar has the brand.
  */
 const route = useRoute()
-const visible = computed(() => route.name !== undefined && route.name !== 'home')
+const resolved = computed(() => route.name !== undefined)
+const onHome = computed(() => route.name === 'home')
 </script>
 
 <template>
-  <RouterLink v-if="visible" to="/" class="mobile-home-link">
+  <div v-if="resolved && onHome" class="mobile-home-link">
+    <AppLogo :size="28" class="mobile-home-link__logo" />
+    <span class="mobile-home-link__name">MusicReviewer</span>
+  </div>
+  <RouterLink v-else-if="resolved" to="/" class="mobile-home-link">
     <AppIcon name="arrowLeft" :size="20" class="mobile-home-link__arrow" />
     <AppLogo :size="28" class="mobile-home-link__logo" />
     <span class="mobile-home-link__name">MusicReviewer</span>

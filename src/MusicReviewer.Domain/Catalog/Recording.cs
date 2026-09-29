@@ -3,7 +3,7 @@ namespace MusicReviewer.Domain.Catalog;
 /// <summary>
 /// An album-level work (a MusicBrainz release group), independent of any particular pressing or edition.
 /// </summary>
-public class Recording
+public class Recording : IHasWikipediaArticle
 {
     public Guid Id { get; set; }
     public Guid ArtistId { get; set; }

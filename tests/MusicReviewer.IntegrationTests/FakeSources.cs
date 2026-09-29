@@ -130,3 +130,20 @@ public sealed class FakeCoverArt : ICoverArtClient
     public Task<string?> GetFrontCoverUrlAsync(Guid releaseGroupId, CancellationToken cancellationToken) =>
         Task.FromResult<string?>($"https://coverartarchive.org/release-group/{releaseGroupId}/front-500");
 }
+
+public sealed class FakeWikipedia : IWikipediaClient
+{
+    private static readonly Dictionary<string, WikipediaLead> Leads = new()
+    {
+        ["Miles Davis"] = new("Miles Davis", "https://en.wikipedia.org/wiki/Miles_Davis", 1001,
+            "Miles Dewey Davis III was an American trumpeter, bandleader, and composer.\nHe is among the most influential figures in jazz."),
+        ["Kind of Blue"] = new("Kind of Blue", "https://en.wikipedia.org/wiki/Kind_of_Blue", 2002,
+            "Kind of Blue is a studio album by American jazz musician Miles Davis.\nIt is regarded as one of the greatest jazz records."),
+    };
+
+    public Task<IReadOnlyDictionary<string, WikipediaLead>> GetLeadsAsync(IReadOnlyCollection<string> titles, CancellationToken cancellationToken)
+    {
+        IReadOnlyDictionary<string, WikipediaLead> leads = titles.Where(Leads.ContainsKey).ToDictionary(t => t, t => Leads[t]);
+        return Task.FromResult(leads);
+    }
+}

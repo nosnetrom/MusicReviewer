@@ -42,6 +42,19 @@ public interface IWikidataClient
     Task<IReadOnlyDictionary<Guid, WikidataLink>> GetReleaseGroupLinksAsync(IReadOnlyCollection<Guid> releaseGroupIds, CancellationToken cancellationToken);
 }
 
+/// <summary>English Wikipedia: article lead sections for summaries.</summary>
+public interface IWikipediaClient
+{
+    /// <summary>Most titles per <see cref="GetLeadsAsync"/> call (the API's limit for intro extracts).</summary>
+    const int MaxTitlesPerRequest = 20;
+
+    /// <summary>
+    /// Fetches the plain-text lead section of each article. Keys are the titles as requested;
+    /// missing pages and disambiguation pages are left out.
+    /// </summary>
+    Task<IReadOnlyDictionary<string, WikipediaLead>> GetLeadsAsync(IReadOnlyCollection<string> titles, CancellationToken cancellationToken);
+}
+
 public interface ICoverArtClient
 {
     /// <returns>The front-cover image URL, or null when the release group has no cover art.</returns>

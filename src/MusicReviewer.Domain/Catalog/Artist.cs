@@ -1,7 +1,7 @@
 namespace MusicReviewer.Domain.Catalog;
 
 /// <summary>A performer or group, keyed externally by its MusicBrainz ID.</summary>
-public class Artist
+public class Artist : IHasWikipediaArticle
 {
     public Guid Id { get; set; }
     public Guid MusicBrainzId { get; set; }

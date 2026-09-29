@@ -19,6 +19,16 @@ public sealed record SearchResultDto(string Query, IReadOnlyList<ArtistSummaryDt
 
 public sealed record GenreDto(string Name, string Slug);
 
+/// <summary>
+/// A Wikipedia lead section, shown as a summary. CC BY-SA 4.0: always display it with
+/// attribution and a link to <see cref="Url"/>.
+/// </summary>
+public sealed record WikipediaSummaryDto(string Title, string Url, long RevisionId, DateTime FetchedUtc, IReadOnlyList<string> Paragraphs)
+{
+    public static WikipediaSummaryDto? From(WikipediaArticle? article) =>
+        article is null ? null : new(article.PageTitle, article.PageUrl, article.RevisionId, article.FetchedUtc, article.Paragraphs);
+}
+
 public sealed record ArtistDetailDto(
     Guid Mbid,
     string Name,
@@ -32,7 +42,8 @@ public sealed record ArtistDetailDto(
     IReadOnlyList<GenreDto> Genres,
     IReadOnlyList<string> Styles,
     SyncStatus SyncStatus,
-    int RecordingCount);
+    int RecordingCount,
+    WikipediaSummaryDto? Summary);
 
 public sealed record RecordingSummaryDto(
     Guid Mbid,
@@ -70,7 +81,8 @@ public sealed record RecordingDetailDto(
     string? WikipediaTitle,
     SyncStatus DetailsStatus,
     IReadOnlyList<TrackDto> Tracks,
-    IReadOnlyList<CreditGroupDto> Credits);
+    IReadOnlyList<CreditGroupDto> Credits,
+    WikipediaSummaryDto? Summary);
 
 public sealed record FeaturedDto(IReadOnlyList<ArtistSummaryDto> Artists, IReadOnlyList<RecordingSummaryDto> Recordings);
 

@@ -30,8 +30,18 @@ describe('MobileHomeLink', () => {
     expect(link.find('img.app-logo').exists()).toBe(true)
   })
 
-  it('is shown on other pages but not on Home', async () => {
+  it('is a link on other pages', async () => {
     expect((await mountAt('/browse')).find('a').exists()).toBe(true)
-    expect((await mountAt('/')).find('a').exists()).toBe(false)
+  })
+
+  it('shows just the logo and site name on Home, without the arrow or a link', async () => {
+    const wrapper = await mountAt('/')
+    const brand = wrapper.get('.mobile-home-link')
+
+    expect(brand.element.tagName).toBe('DIV')
+    expect(brand.text()).toBe('MusicReviewer')
+    expect(brand.find('img.app-logo').exists()).toBe(true)
+    expect(brand.find('svg').exists()).toBe(false)
+    expect(wrapper.find('a').exists()).toBe(false)
   })
 })
