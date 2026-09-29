@@ -4,6 +4,7 @@ import AdaptiveBackdrop from '@/components/glass/AdaptiveBackdrop.vue'
 import GlassNavBar from '@/components/glass/GlassNavBar.vue'
 import GlassToastRegion from '@/components/glass/GlassToastRegion.vue'
 import ApiStatus from '@/components/ApiStatus.vue'
+import MobileHomeLink from '@/components/MobileHomeLink.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 // Instantiating the store applies saved theme/transparency preferences to <html>.
@@ -22,6 +23,7 @@ const isDev = import.meta.env.DEV
   <AdaptiveBackdrop />
   <a class="skip-link" href="#main">Skip to content</a>
   <GlassNavBar :links="links" />
+  <MobileHomeLink />
 
   <main id="main" class="app-main" tabindex="-1">
     <RouterView v-slot="{ Component, route }">
@@ -112,6 +114,11 @@ const isDev = import.meta.env.DEV
 @media (max-width: 640px) {
   .app-main {
     padding-top: var(--space-6);
+  }
+
+  /* The home link already provides space at the top. */
+  .mobile-home-link + .app-main {
+    padding-top: var(--space-2);
   }
 
   .app-footer {
