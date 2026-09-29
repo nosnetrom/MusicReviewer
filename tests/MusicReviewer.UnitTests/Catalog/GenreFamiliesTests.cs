@@ -23,7 +23,7 @@ public class GenreFamiliesTests
     [InlineData("hard bop", "Jazz")]
     [InlineData("swing", "Jazz")]
     [InlineData("jazz-funk", "Jazz", "Funk & Disco")]
-    [InlineData("blues rock", "Blues", "Rock")]
+    [InlineData("blues rock", "Rock")]
     [InlineData("pop soul", "Soul & R&B", "Pop")]
     [InlineData("contemporary r&b", "Soul & R&B")]
     [InlineData("jazz rap", "Hip-Hop", "Jazz")]
@@ -53,9 +53,26 @@ public class GenreFamiliesTests
     [InlineData("Kraftwerk", "Electronic")]
     [InlineData("Bob Marley & The Wailers", "Reggae & Ska")]
     [InlineData("Kendrick Lamar", "Hip-Hop")]
-    [InlineData("Aretha Franklin", "Soul & R&B", "Gospel")]
-    [InlineData("Mahavishnu Orchestra", "Jazz", "Rock")]
+    [InlineData("Aretha Franklin", "Soul & R&B")]
+    [InlineData("Mahavishnu Orchestra", "Jazz")]
+    // Genuine blends keep their second and third genres.
+    [InlineData("Nina Simone", "Jazz", "Soul & R&B")]
+    [InlineData("Joni Mitchell", "Folk", "Pop", "Jazz")]
+    [InlineData("Emmylou Harris", "Country", "Folk")]
+    [InlineData("Allan Holdsworth", "Jazz", "Rock")]
+    [InlineData("The Beatles", "Rock", "Pop")]
     public void Classifies_featured_artists_by_weight_of_votes(string artist, params string[] expected) =>
+        Assert.Equal(expected, Classified[artist]);
+
+    [Theory]
+    // A few "funk" votes beside jazz and jazz fusion (40% of the jazz votes).
+    [InlineData("Jaco Pastorius", "Jazz")]
+    [InlineData("Snarky Puppy", "Jazz")]
+    // "rock", "soft rock" and "country rock" votes (29% of the country votes).
+    [InlineData("Shania Twain", "Country", "Pop")]
+    // Mostly "blues rock", a style of rock.
+    [InlineData("Fleetwood Mac", "Rock")]
+    public void Minor_tags_do_not_add_a_second_genre(string artist, params string[] expected) =>
         Assert.Equal(expected, Classified[artist]);
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MusicReviewer.Application.Abstractions;
 using MusicReviewer.Domain.Catalog;
@@ -56,5 +57,11 @@ internal static class ArtistMapping
 
         // Empty (not null) marks the artist as classified even when MusicBrainz has no genres for them.
         artist.Styles = string.Join(", ", voted.Take(MaxStyles).Select(g => g.Name));
+        artist.GenreVotes = JsonSerializer.Serialize(voted);
+        artist.GenresVersion = GenreFamilies.Version;
     }
+
+    /// <returns>The stored votes, or null when the artist was classified before votes were kept.</returns>
+    public static IReadOnlyList<GenreInfo>? StoredVotes(Artist artist) =>
+        artist.GenreVotes is null ? null : JsonSerializer.Deserialize<List<GenreInfo>>(artist.GenreVotes);
 }

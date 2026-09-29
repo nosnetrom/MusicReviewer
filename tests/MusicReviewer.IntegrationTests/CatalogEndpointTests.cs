@@ -144,6 +144,32 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Outdated_genres_are_reclassified_from_stored_votes_without_calling_MusicBrainz()
+    {
+        var mbid = FakeMusicBrainz.MilesDavis;
+        await EventuallyAsync<ArtistDetailDto>($"/api/artists/{mbid}", a => a.SyncStatus == SyncStatus.Ready);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<MusicReviewerDbContext>();
+        var artist = await db.Artists.Include(a => a.Genres).SingleAsync(a => a.MusicBrainzId == mbid, Ct);
+        Assert.NotNull(artist.GenreVotes);
+        Assert.Equal(GenreFamilies.Version, artist.GenresVersion);
+
+        // Simulate genres classified under an older version of the rules.
+        artist.Genres.Clear();
+        artist.GenresVersion = 0;
+        await db.SaveChangesAsync(Ct);
+        var lookupsBefore = factory.MusicBrainz.Calls.Count(c => c == $"artist:{mbid}");
+
+        var result = await scope.ServiceProvider.GetRequiredService<GenreReclassifier>().RunAsync(Ct);
+
+        Assert.True(result.Reclassified >= 1);
+        var refreshed = await GetAsync<ArtistDetailDto>($"/api/artists/{mbid}");
+        Assert.Equal(["jazz"], refreshed!.Genres.Select(g => g.Slug));
+        Assert.Equal(lookupsBefore, factory.MusicBrainz.Calls.Count(c => c == $"artist:{mbid}"));
+    }
+
+    [Fact]
     public async Task Unknown_artist_is_404_problem_details()
     {
         var response = await _client.GetAsync($"/api/artists/{Guid.NewGuid()}", Ct);

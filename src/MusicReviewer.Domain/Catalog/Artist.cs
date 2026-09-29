@@ -41,6 +41,12 @@ public class Artist
     /// </summary>
     public string? Styles { get; set; }
 
+    /// <summary>MusicBrainz genre votes as JSON, kept so genres can be re-classified without refetching.</summary>
+    public string? GenreVotes { get; set; }
+
+    /// <summary>The <see cref="GenreFamilies.Version"/> the current <see cref="Genres"/> were classified with.</summary>
+    public int GenresVersion { get; set; }
+
     /// <summary>State of the discography import (studio albums and EPs).</summary>
     public SyncStatus SyncStatus { get; set; }
 

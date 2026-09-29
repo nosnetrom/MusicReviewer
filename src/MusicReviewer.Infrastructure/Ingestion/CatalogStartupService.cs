@@ -6,7 +6,7 @@ using MusicReviewer.Application.Catalog;
 namespace MusicReviewer.Infrastructure.Ingestion;
 
 /// <summary>
-/// Startup catalog upkeep: queues genre classification for any imported artist missing it,
+/// Startup catalog upkeep: brings imported artists' genres up to the current classification rules,
 /// then seeds the featured artists when <see cref="CatalogOptions.SeedFeaturedArtistsOnStartup"/> is set.
 /// </summary>
 public sealed class CatalogStartupService(IServiceScopeFactory scopes, IOptions<CatalogOptions> options) : BackgroundService
@@ -14,7 +14,7 @@ public sealed class CatalogStartupService(IServiceScopeFactory scopes, IOptions<
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using (var scope = scopes.CreateAsyncScope())
-            await scope.ServiceProvider.GetRequiredService<GenreReclassifier>().QueueUnclassifiedAsync(stoppingToken);
+            await scope.ServiceProvider.GetRequiredService<GenreReclassifier>().RunAsync(stoppingToken);
 
         if (!options.Value.SeedFeaturedArtistsOnStartup || options.Value.FeaturedArtists.Count == 0)
             return;

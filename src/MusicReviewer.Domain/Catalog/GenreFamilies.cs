@@ -28,8 +28,18 @@ public static class GenreFamilies
 
     public static IReadOnlyList<GenreFamily> All => Ordered;
 
-    /// <summary>An artist's broad genres must carry at least this share of their strongest genre's votes.</summary>
-    public const double MinimumShareOfTop = 0.25;
+    /// <summary>
+    /// Bump whenever the mapping or thresholds change; artists classified under an older
+    /// version are re-classified at startup.
+    /// </summary>
+    public const int Version = 2;
+
+    /// <summary>
+    /// A secondary broad genre must carry at least this share of the strongest genre's votes.
+    /// High enough that a few stray votes ("funk" on a jazz act, "rock" on a country singer)
+    /// don't add a genre; low enough to keep real blends (Joni Mitchell: folk, pop, jazz).
+    /// </summary>
+    public const double MinimumShareOfTop = 0.45;
 
     public const int MaxPerArtist = 3;
 
@@ -43,6 +53,8 @@ public static class GenreFamilies
         ["third stream"] = [Jazz],
         ["jazz rap"] = [HipHop, Jazz],
         ["rockabilly"] = [Rock, Country],
+        // A style of rock: counting it toward Blues filed rock bands (Fleetwood Mac) under Blues.
+        ["blues rock"] = [Rock],
         ["southern rock"] = [Rock],
         ["british rhythm & blues"] = [Rock, Blues],
         ["rhythm & blues"] = [Soul, Blues],
