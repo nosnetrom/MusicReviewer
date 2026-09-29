@@ -25,6 +25,7 @@ public sealed partial class CatalogService(
     ILogger<CatalogService> logger)
 {
     private const int MaxSearchResults = 12;
+    private const int MaxSearchSuggestions = 500;
     private const int MaxFeaturedRecordings = 24;
     /// <summary>Albums per browse page; "Load more" fetches the next page.</summary>
     public const int BrowsePageSize = 60;
@@ -70,6 +71,19 @@ public sealed partial class CatalogService(
             .ToList();
 
         return new SearchResultDto(text, artists, remoteAvailable);
+    }
+
+    /// <summary>Names (with broad genres) of imported artists, for the search field's rotating examples.</summary>
+    public async Task<IReadOnlyList<ArtistSuggestionDto>> GetSearchSuggestionsAsync(CancellationToken cancellationToken)
+    {
+        var artists = await db.Artists.AsNoTracking()
+            .Where(a => a.LastSyncedUtc != null && a.Name != "")
+            .OrderBy(a => a.SortName)
+            .Take(MaxSearchSuggestions)
+            .Select(a => new { a.Name, Genres = a.Genres.Select(g => g.Slug).ToList() })
+            .ToListAsync(cancellationToken);
+
+        return [.. artists.Select(a => new ArtistSuggestionDto(a.Name, a.Genres))];
     }
 
     private async Task<(IReadOnlyList<ArtistInfo> Results, bool Available)> SearchRemoteAsync(string text, string normalized, CancellationToken cancellationToken)

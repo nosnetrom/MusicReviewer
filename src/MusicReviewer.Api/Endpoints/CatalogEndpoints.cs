@@ -11,7 +11,10 @@ public static class CatalogEndpoints
         api.MapGet("/search", (string? q, CatalogService catalog, CancellationToken ct) => catalog.SearchAsync(q, ct))
             .WithSummary("Search artists: local matches plus a live MusicBrainz search.");
 
-        api.MapGet("/artists/{mbid:guid}", (Guid mbid, CatalogService catalog, CancellationToken ct) => catalog.GetArtistAsync(mbid, ct))
+        api.MapGet("/search/suggestions", (CatalogService catalog, CancellationToken ct) => catalog.GetSearchSuggestionsAsync(ct))
+            .WithSummary("Names and broad genres of imported artists, used as example searches.");
+
+        api.MapGet("/artists/{mbid:guid}",(Guid mbid, CatalogService catalog, CancellationToken ct) => catalog.GetArtistAsync(mbid, ct))
             .WithSummary("Artist details. The first request for an artist queues its discography import.");
 
         api.MapGet("/artists/{mbid:guid}/recordings", GetArtistRecordingsAsync)

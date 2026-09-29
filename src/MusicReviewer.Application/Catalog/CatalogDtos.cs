@@ -12,6 +12,9 @@ public sealed record ArtistSummaryDto(
     int? EndYear,
     bool IsImported);
 
+/// <summary>An imported artist's name and broad genre slugs, for search-field suggestions.</summary>
+public sealed record ArtistSuggestionDto(string Name, IReadOnlyList<string> Genres);
+
 public sealed record SearchResultDto(string Query, IReadOnlyList<ArtistSummaryDto> Artists, bool RemoteAvailable);
 
 public sealed record GenreDto(string Name, string Slug);

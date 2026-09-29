@@ -3,7 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import AppLogo from '@/components/AppLogo.vue'
-import GlassButton from './GlassButton.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 /**
@@ -11,7 +10,7 @@ import { usePreferencesStore } from '@/stores/preferences'
  * Tightens up once the page scrolls.
  */
 const props = defineProps({
-  /** @type {import('vue').PropType<{ to: string, label: string, icon: string, exact?: boolean }[]>} */
+  /** @type {import('vue').PropType<{ to: string, label: string, icon: string, exact?: boolean, title?: string }[]>} */
   links: { type: Array, required: true },
 })
 
@@ -43,6 +42,7 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
       <li v-for="link in props.links" :key="link.to">
         <RouterLink
           :to="link.to"
+          :title="link.title"
           class="nav__link"
           exact-active-class="is-active"
           :active-class="link.exact ? '' : 'is-active'"
@@ -53,16 +53,17 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
       </li>
     </ul>
 
-    <GlassButton
-      variant="plain"
-      icon-only
-      class="nav__theme"
+    <!-- Styled like the links above; a button because it changes the theme rather than the page. -->
+    <button
+      type="button"
+      class="nav__link nav__theme"
       :aria-label="themeLabel"
       :title="themeLabel"
       @click="preferences.cycleTheme()"
     >
       <AppIcon :name="themeIcon" />
-    </GlassButton>
+      <span class="nav__label">Theme</span>
+    </button>
   </nav>
 </template>
 
@@ -127,8 +128,19 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
     color var(--duration-fast) var(--ease-out);
 }
 
-.nav__link:hover {
-  color: var(--color-text);
+/* Hover only where there is a real pointer; on touch screens it would stick after a tap. */
+@media (hover: hover) {
+  .nav__link:hover {
+    color: var(--color-text);
+  }
+}
+
+/* Reset button defaults so the theme toggle matches the links exactly. */
+.nav__theme {
+  border: 0;
+  font-family: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
 .nav__link.is-active {
@@ -136,31 +148,38 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
   background: var(--color-separator);
 }
 
-/* Phones: a bottom tab bar with stacked icon + label, brand hidden. */
+/*
+ * Phones: a bottom tab bar with stacked icon + label. The brand is hidden (the top-left
+ * home link replaces it), and the three tabs plus the theme button each get an equal
+ * quarter of the bar, so all four are evenly spaced.
+ */
 @media (max-width: 640px) {
   .nav,
   .nav--compact {
     top: auto;
     bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 0;
     width: calc(100% - 2 * var(--space-4));
     height: 4rem;
     padding: 0 var(--space-2);
   }
 
-  /* Logo only; the name stays available to screen readers. */
-  .nav__brand-name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  .nav__brand {
+    display: none;
   }
 
   .nav__links {
-    flex: 1;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items: center;
+    gap: 0;
     margin: 0;
+  }
+
+  .nav__theme {
+    justify-self: center;
   }
 
   .nav__link {

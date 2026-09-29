@@ -40,6 +40,9 @@ const query = (params) => {
 /** @returns {Promise<{ query: string, artists: ArtistSummary[], remoteAvailable: boolean }>} */
 export const searchArtists = (q, options) => getJson(`/api/search${query({ q })}`, options)
 
+/** @returns {Promise<{ name: string, genres: string[] }[]>} imported artists, for example searches */
+export const getSearchSuggestions = (options) => getJson('/api/search/suggestions', options)
+
 export const getArtist = (mbid, options) => getJson(`/api/artists/${mbid}`, options)
 
 /**

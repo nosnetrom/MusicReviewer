@@ -6,13 +6,21 @@ import EmptyState from '@/components/EmptyState.vue'
 import GlassSearchField from '@/components/glass/GlassSearchField.vue'
 import ArtistRow from '@/components/music/ArtistRow.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
-import { getFeatured } from '@/api/catalog'
+import { getFeatured, getSearchSuggestions } from '@/api/catalog'
 import { usePolling } from '@/composables/usePolling'
+import { pickSuggestionForVisit } from '@/utils/suggestions'
 
 const router = useRouter()
 const query = ref('')
 
 const search = (q) => router.push({ name: 'search', query: { q } })
+
+// One example musician per visit, picked from the catalog with jazz weighted up.
+const placeholder = ref('Try “Nina Simone”')
+usePolling(async ({ signal }) => {
+  const name = pickSuggestionForVisit(await getSearchSuggestions({ signal }))
+  if (name) placeholder.value = `Try “${name}”`
+})
 
 // While the featured artists are still being imported, keep checking for new albums.
 const { data: featured, error } = usePolling(({ signal }) => getFeatured({ signal }), {
@@ -39,7 +47,7 @@ const loaded = computed(() => featured.value !== null || error.value !== null)
           v-model="query"
           size="lg"
           label="Search artists"
-          placeholder="Try “Nina Simone”"
+          :placeholder="placeholder"
           class="hero__search"
           @submit="search"
         />

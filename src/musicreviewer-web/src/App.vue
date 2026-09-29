@@ -11,7 +11,7 @@ import { usePreferencesStore } from '@/stores/preferences'
 usePreferencesStore()
 
 const links = [
-  { to: '/', label: 'Home', icon: 'home', exact: true },
+  { to: '/', label: 'Home', icon: 'home', exact: true, title: 'MusicReviewer Home' },
   { to: '/browse', label: 'Browse', icon: 'browse' },
   { to: '/search', label: 'Search', icon: 'search' },
 ]

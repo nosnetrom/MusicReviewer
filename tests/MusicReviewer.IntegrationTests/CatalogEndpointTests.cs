@@ -114,6 +114,17 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Search_suggestions_list_imported_artists_with_their_genres()
+    {
+        await EventuallyAsync<ArtistDetailDto>($"/api/artists/{FakeMusicBrainz.MilesDavis}", a => a.SyncStatus == SyncStatus.Ready);
+
+        var suggestions = await GetAsync<List<ArtistSuggestionDto>>("/api/search/suggestions");
+
+        var miles = Assert.Single(suggestions!, s => s.Name == "Miles Davis");
+        Assert.Equal(["jazz"], miles.Genres);
+    }
+
+    [Fact]
     public async Task Repeated_views_queue_a_single_import()
     {
         var mbid = FakeMusicBrainz.JoniMitchell;
