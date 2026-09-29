@@ -196,6 +196,7 @@ useCoverBackdrop(() => {
 <style scoped>
 .artist {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 
@@ -265,6 +266,7 @@ useCoverBackdrop(() => {
 
 .artist__recordings {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 

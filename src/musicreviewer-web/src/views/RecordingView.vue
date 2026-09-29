@@ -177,7 +177,7 @@ useCoverBackdrop(
 
 @media (max-width: 760px) {
   .recording {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
   }
 

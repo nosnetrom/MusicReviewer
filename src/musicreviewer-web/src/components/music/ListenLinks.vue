@@ -92,6 +92,26 @@ const accessibleName = (link) =>
   color: var(--color-text-secondary);
 }
 
+/*
+ * Narrow screens: one full-width button per row, and let a note drop to a second line.
+ * Buttons don't wrap by default, and "Amazon Music (requires account)" is wider than a phone panel.
+ */
+@media (max-width: 480px) {
+  .listen__links {
+    flex-direction: column;
+  }
+
+  .listen__link {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    padding-block: var(--space-2);
+    line-height: 1.3;
+    white-space: normal;
+    text-align: left;
+  }
+}
+
 .listen__hint {
   margin: 0;
   font-size: var(--font-size-xs);

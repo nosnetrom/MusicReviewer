@@ -57,6 +57,14 @@ const subtitle = (r) =>
   list-style: none;
 }
 
+/*
+ * Grid items default to min-width: auto, so a long single-line title would hold its column
+ * at the title's full width. Let cards shrink so titles truncate with an ellipsis instead.
+ */
+.recording-grid > li {
+  min-width: 0;
+}
+
 .placeholder {
   padding: var(--space-2);
 }

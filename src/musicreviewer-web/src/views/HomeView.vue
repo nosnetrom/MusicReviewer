@@ -72,8 +72,10 @@ const loaded = computed(() => featured.value !== null || error.value !== null)
 </template>
 
 <style scoped>
+/* minmax(0, 1fr) rather than the implicit auto column, so no section can grow past the screen. */
 .home {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-8);
 }
 
@@ -122,10 +124,15 @@ const loaded = computed(() => featured.value !== null || error.value !== null)
   list-style: none;
 }
 
+/* Let rows shrink so long names and descriptions truncate instead of widening the list. */
+.home__artists > li {
+  min-width: 0;
+}
+
 /* Phones: logo sits centred above the text. */
 @media (max-width: 640px) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'logo' 'text';
     gap: 0;
     padding-top: 0;
