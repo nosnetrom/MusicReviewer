@@ -8,6 +8,7 @@ import ArtistRow from '@/components/music/ArtistRow.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
 import { getFeatured, getSearchSuggestions } from '@/api/catalog'
 import { usePolling } from '@/composables/usePolling'
+import { createStableShuffle } from '@/utils/shuffle'
 import { pickSuggestionForVisit } from '@/utils/suggestions'
 
 const router = useRouter()
@@ -28,7 +29,9 @@ const { data: featured, error } = usePolling(({ signal }) => getFeatured({ signa
   until: (f) => f.recordings.length >= 12,
 })
 
-const recordings = computed(() => featured.value?.recordings ?? [])
+// A fresh random order on each visit, kept steady while the list above refreshes.
+const shuffle = createStableShuffle((r) => r.mbid)
+const recordings = computed(() => shuffle(featured.value?.recordings ?? []))
 const artists = computed(() => featured.value?.artists ?? [])
 const loaded = computed(() => featured.value !== null || error.value !== null)
 </script>
