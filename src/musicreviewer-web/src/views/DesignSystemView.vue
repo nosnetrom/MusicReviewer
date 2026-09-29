@@ -167,7 +167,11 @@ const sheetOpen = ref(false)
     <section>
       <h2>Cards</h2>
       <div class="ds__cards">
-        <GlassCard title="Kind of Blue" subtitle="Miles Davis · 1959" to="/recordings/kind-of-blue">
+        <GlassCard
+          title="Kind of Blue"
+          subtitle="Miles Davis · 1959"
+          to="/recordings/8e8a594f-2175-38c7-a871-abb68ec363e7"
+        >
           <template #media><CoverArt seed="Kind of Blue" alt="Kind of Blue cover art" /></template>
         </GlassCard>
         <GlassCard title="Blue" subtitle="Joni Mitchell · 1971">

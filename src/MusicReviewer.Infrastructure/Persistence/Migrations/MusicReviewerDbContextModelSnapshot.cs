@@ -62,6 +62,9 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
 
+                    b.Property<int>("ImportedCategories")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
 
@@ -76,13 +79,35 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
                     b.Property<string>("SortName")
                         .IsRequired()
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
+                    b.Property<string>("Styles")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SyncStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
+
+                    b.Property<string>("WikidataId")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int?>("WikidataSitelinks")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WikipediaTitle")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.HasKey("Id");
 
@@ -92,7 +117,7 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                     b.HasIndex("MusicBrainzId")
                         .IsUnique();
 
-                    b.HasIndex("Name");
+                    b.HasIndex("NormalizedName");
 
                     b.ToTable("Artists");
                 });
@@ -157,12 +182,22 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ArtistCredit")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<Guid>("ArtistId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CoverArtUrl")
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
+
+                    b.Property<int>("DetailsSyncStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DetailsSyncedUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FirstReleaseDate")
                         .HasMaxLength(10)
@@ -187,6 +222,9 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                     b.Property<int>("PrimaryType")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("RepresentativeReleaseId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("SecondaryTypes")
                         .HasColumnType("int");
 
@@ -194,6 +232,17 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("WikidataId")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int?>("WikidataSitelinks")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WikipediaTitle")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.HasKey("Id");
 
@@ -257,6 +306,17 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
+                    b.Property<DateTime>("NotBeforeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Parameter")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -268,9 +328,12 @@ namespace MusicReviewer.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Status", "CreatedUtc");
+                    b.HasIndex("Type", "TargetId", "Parameter")
+                        .IsUnique()
+                        .HasDatabaseName("IX_IngestionJobs_Active")
+                        .HasFilter("[Status] IN (0, 1)");
 
-                    b.HasIndex("Type", "TargetId");
+                    b.HasIndex("Status", "Priority", "NotBeforeUtc", "CreatedUtc");
 
                     b.ToTable("IngestionJobs");
                 });

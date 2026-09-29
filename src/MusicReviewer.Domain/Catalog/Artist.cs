@@ -5,7 +5,20 @@ public class Artist
 {
     public Guid Id { get; set; }
     public Guid MusicBrainzId { get; set; }
-    public required string Name { get; set; }
+
+    public string Name
+    {
+        get;
+        set
+        {
+            field = value;
+            NormalizedName = NameNormalizer.Normalize(value);
+        }
+    } = "";
+
+    /// <summary>Lowercase, accent-free form of <see cref="Name"/> used for local search.</summary>
+    public string NormalizedName { get; private set; } = "";
+
     public required string SortName { get; set; }
     public string? Disambiguation { get; set; }
     public ArtistType Type { get; set; }
@@ -17,11 +30,32 @@ public class Artist
     public int? EndYear { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsFeatured { get; set; }
+
+    public string? WikidataId { get; set; }
+    public string? WikipediaTitle { get; set; }
+    public int? WikidataSitelinks { get; set; }
+
+    /// <summary>
+    /// The artist's most-voted specific MusicBrainz genres, comma separated (e.g. "hard bop, modal jazz").
+    /// Null until genres have been classified; <see cref="Genres"/> holds the broad genres.
+    /// </summary>
+    public string? Styles { get; set; }
+
+    /// <summary>State of the discography import (studio albums and EPs).</summary>
+    public SyncStatus SyncStatus { get; set; }
+
+    /// <summary>Release categories whose recordings have been imported.</summary>
+    public ReleaseCategories ImportedCategories { get; set; }
+
+    /// <summary>When the discography was last imported successfully.</summary>
     public DateTime? LastSyncedUtc { get; set; }
 
     public WikipediaArticle? Wikipedia { get; set; }
     public List<Recording> Recordings { get; } = [];
     public List<Genre> Genres { get; } = [];
+
+    public bool IsStale(DateTime utcNow, TimeSpan maxAge) =>
+        LastSyncedUtc is null || utcNow - LastSyncedUtc.Value > maxAge;
 }
 
 public enum ArtistType

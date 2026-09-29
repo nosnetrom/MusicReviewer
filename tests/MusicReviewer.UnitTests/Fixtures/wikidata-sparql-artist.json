@@ -1,0 +1,26 @@
+{
+  "head" : {
+    "vars" : [ "mbid", "item", "sitelinks", "article" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q93341"
+      },
+      "article" : {
+        "type" : "uri",
+        "value" : "https://en.wikipedia.org/wiki/Miles_Davis"
+      },
+      "mbid" : {
+        "type" : "literal",
+        "value" : "561d854a-6a28-4aa7-8c99-323e6ce46c2a"
+      },
+      "sitelinks" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "99"
+      }
+    } ]
+  }
+}

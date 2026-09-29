@@ -1,40 +1,117 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import EmptyState from '@/components/EmptyState.vue'
+import SyncNotice from '@/components/SyncNotice.vue'
+import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassPanel from '@/components/glass/GlassPanel.vue'
 import CoverArt from '@/components/music/CoverArt.vue'
-import { useBackdrop } from '@/composables/useBackdrop'
-import { hueFromString } from '@/utils/color'
+import CreditList from '@/components/music/CreditList.vue'
+import TrackList from '@/components/music/TrackList.vue'
+import { getRecording, isSettled } from '@/api/catalog'
+import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
+import { usePolling } from '@/composables/usePolling'
+import { wikipediaUrl } from '@/utils/format'
 
 const props = defineProps({
+  /** MusicBrainz release group ID. */
   id: { type: String, required: true },
 })
 
-const { setBackdrop } = useBackdrop()
+const {
+  data: recording,
+  error,
+  refresh,
+} = usePolling(({ signal }) => getRecording(props.id, { signal }), {
+  interval: 2000,
+  until: (r) => isSettled(r.detailsStatus),
+})
 
-// Until real cover art is available, tint the page from the same seed as the placeholder cover.
-onMounted(() => setBackdrop({ tint: `oklch(0.62 0.18 ${hueFromString(props.id)})` }))
+const kind = computed(() => {
+  const r = recording.value
+  if (!r) return ''
+  if (r.category === 'live') return 'Live album'
+  if (r.category === 'compilation') return 'Compilation'
+  return r.primaryType === 'ep' ? 'EP' : 'Album'
+})
+
+const meta = computed(() =>
+  [recording.value?.year, recording.value?.label].filter(Boolean).join(' · '),
+)
+
+watch(recording, (r) => {
+  if (r) document.title = `${r.title} · MusicReviewer`
+})
+
+useCoverBackdrop(
+  () => recording.value && { coverUrl: recording.value.coverArtUrl, seed: recording.value.title },
+)
 </script>
 
 <template>
-  <article class="recording">
+  <EmptyState v-if="error?.status === 404" title="Recording not found" icon="disc">
+    <p>MusicBrainz doesn’t have a recording with this ID.</p>
+    <GlassButton variant="primary" to="/search">Search artists</GlassButton>
+  </EmptyState>
+
+  <EmptyState v-else-if="error && !recording" title="MusicBrainz is unavailable" icon="disc">
+    <p>We couldn’t load this recording right now.</p>
+    <GlassButton variant="primary" @click="refresh">Try again</GlassButton>
+  </EmptyState>
+
+  <div v-else-if="!recording" class="recording" aria-busy="true">
+    <div class="recording__cover"><CoverArt :seed="props.id" alt="" /></div>
+    <p class="text-secondary">Loading recording…</p>
+  </div>
+
+  <article v-else class="recording">
     <div class="recording__cover">
-      <CoverArt :seed="props.id" alt="Cover art" eager />
+      <CoverArt
+        :src="recording.coverArtUrl"
+        :alt="`${recording.title} cover art`"
+        :seed="recording.title"
+        eager
+      />
     </div>
 
     <div class="recording__details">
-      <p class="eyebrow">Album</p>
-      <h1 class="recording__title">Recording</h1>
-      <p class="text-secondary">ID: {{ props.id }}</p>
+      <p class="eyebrow">{{ kind }}</p>
+      <h1 class="recording__title">{{ recording.title }}</h1>
+      <p class="recording__artist">
+        <RouterLink :to="{ name: 'artist', params: { id: recording.artistMbid } }">
+          {{ recording.artistCredit ?? recording.artistName }}
+        </RouterLink>
+      </p>
+      <p v-if="meta" class="recording__meta">{{ meta }}</p>
 
-      <GlassPanel class="recording__summary">
-        <h2 class="recording__summary-title">About this recording</h2>
-        <p class="text-secondary">
-          A summary from Wikipedia will appear here once the catalog is connected.
+      <GlassPanel class="recording__panel">
+        <h2 class="recording__panel-title">About this recording</h2>
+        <template v-if="recording.wikipediaTitle">
+          <p class="text-secondary">A summary from Wikipedia is coming soon.</p>
+          <a :href="wikipediaUrl(recording.wikipediaTitle)" target="_blank" rel="noopener">
+            Read “{{ recording.wikipediaTitle }}” on Wikipedia
+          </a>
+        </template>
+        <p v-else class="text-secondary">No Wikipedia article is linked to this recording.</p>
+      </GlassPanel>
+
+      <GlassPanel class="recording__panel">
+        <h2 class="recording__panel-title">Tracks</h2>
+        <SyncNotice
+          :status="recording.detailsStatus"
+          syncing-text="Importing tracks and personnel…"
+          failed-text="We couldn’t import the track list."
+          @retry="refresh"
+        />
+        <TrackList v-if="recording.tracks.length" :tracks="recording.tracks" />
+        <p v-else-if="recording.detailsStatus === 'ready'" class="text-secondary">
+          No track list is available.
         </p>
-        <p class="recording__attribution">
-          Summary from Wikipedia, available under
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
-        </p>
+      </GlassPanel>
+
+      <GlassPanel v-if="recording.credits.length" class="recording__panel">
+        <h2 class="recording__panel-title">Personnel</h2>
+        <CreditList :groups="recording.credits" />
       </GlassPanel>
     </div>
   </article>
@@ -49,28 +126,45 @@ onMounted(() => setBackdrop({ tint: `oklch(0.62 0.18 ${hueFromString(props.id)})
 }
 
 .recording__cover {
+  position: sticky;
+  top: calc(3.5rem + var(--space-6));
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--glass-shadow-3);
 }
 
 .recording__title {
-  font-size: var(--font-size-display);
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);
 }
 
-.recording__summary {
-  margin-top: var(--space-6);
+.recording__artist {
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.recording__artist a {
+  color: inherit;
+}
+
+.recording__meta {
+  color: var(--color-text-secondary);
+}
+
+.recording__panel {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
   padding: var(--space-5);
 }
 
-.recording__summary-title {
+.recording__panel-title {
+  margin: 0;
   font-size: var(--font-size-lg);
 }
 
-.recording__attribution {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
+.recording__panel :deep(.sync-notice) {
+  justify-self: start;
 }
 
 @media (max-width: 760px) {
@@ -80,6 +174,7 @@ onMounted(() => setBackdrop({ tint: `oklch(0.62 0.18 ${hueFromString(props.id)})
   }
 
   .recording__cover {
+    position: static;
     max-width: 18rem;
   }
 }

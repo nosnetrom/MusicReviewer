@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
@@ -16,8 +17,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     // Forward API calls to the ASP.NET Core "http" launch profile during local development.
+    // Set API_PROXY_TARGET to point at an API running elsewhere.
     proxy: {
-      '/api': 'http://localhost:5080',
+      '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:5080',
     },
   },
 })

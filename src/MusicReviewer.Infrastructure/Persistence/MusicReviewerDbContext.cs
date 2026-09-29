@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using MusicReviewer.Application.Abstractions;
 using MusicReviewer.Domain.Catalog;
 using MusicReviewer.Domain.Ingestion;
 
 namespace MusicReviewer.Infrastructure.Persistence;
 
-public class MusicReviewerDbContext(DbContextOptions<MusicReviewerDbContext> options) : DbContext(options)
+public class MusicReviewerDbContext(DbContextOptions<MusicReviewerDbContext> options) : DbContext(options), IMusicReviewerDbContext
 {
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<Recording> Recordings => Set<Recording>();

@@ -1,0 +1,44 @@
+{
+  "head" : {
+    "vars" : [ "mbid", "item", "sitelinks", "article" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q885776"
+      },
+      "article" : {
+        "type" : "uri",
+        "value" : "https://en.wikipedia.org/wiki/Blue_Moods"
+      },
+      "mbid" : {
+        "type" : "literal",
+        "value" : "39402cf4-888f-3af0-9d0c-0dc7e80baa35"
+      },
+      "sitelinks" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "6"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4023057"
+      },
+      "article" : {
+        "type" : "uri",
+        "value" : "https://en.wikipedia.org/wiki/Young_Man_with_a_Horn_(Miles_Davis_album)"
+      },
+      "mbid" : {
+        "type" : "literal",
+        "value" : "093a3235-7271-46d5-9c94-c092edf1fb25"
+      },
+      "sitelinks" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "3"
+      }
+    } ]
+  }
+}

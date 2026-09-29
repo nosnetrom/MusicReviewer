@@ -8,9 +8,16 @@ internal sealed class IngestionJobConfiguration : IEntityTypeConfiguration<Inges
 {
     public void Configure(EntityTypeBuilder<IngestionJob> builder)
     {
-        // Workers poll for the oldest queued jobs.
-        builder.HasIndex(j => new { j.Status, j.CreatedUtc });
-        builder.HasIndex(j => new { j.Type, j.TargetId });
+        // The worker takes the highest-priority, oldest due job.
+        builder.HasIndex(j => new { j.Status, j.Priority, j.NotBeforeUtc, j.CreatedUtc });
+
+        // At most one queued-or-running job per (type, target, parameter).
+        builder.HasIndex(j => new { j.Type, j.TargetId, j.Parameter })
+            .IsUnique()
+            .HasFilter("[Status] IN (0, 1)")
+            .HasDatabaseName("IX_IngestionJobs_Active");
+
+        builder.Property(j => j.Parameter).HasMaxLength(50);
         builder.Property(j => j.Error).HasMaxLength(4000);
     }
 }

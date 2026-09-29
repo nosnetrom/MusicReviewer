@@ -9,10 +9,13 @@ internal sealed class ArtistConfiguration : IEntityTypeConfiguration<Artist>
     public void Configure(EntityTypeBuilder<Artist> builder)
     {
         builder.HasIndex(a => a.MusicBrainzId).IsUnique();
-        builder.HasIndex(a => a.Name);
+        builder.HasIndex(a => a.NormalizedName);
         builder.HasIndex(a => a.IsFeatured).HasFilter("[IsFeatured] = 1");
 
         builder.Property(a => a.Name).HasMaxLength(400);
+        builder.Property(a => a.NormalizedName).HasMaxLength(400);
+        builder.Property(a => a.WikidataId).HasMaxLength(16);
+        builder.Property(a => a.WikipediaTitle).HasMaxLength(400);
         builder.Property(a => a.SortName).HasMaxLength(400);
         builder.Property(a => a.Disambiguation).HasMaxLength(400);
         builder.Property(a => a.Country).HasMaxLength(2).IsFixedLength();
@@ -33,6 +36,9 @@ internal sealed class RecordingConfiguration : IEntityTypeConfiguration<Recordin
         builder.HasIndex(r => r.Title);
 
         builder.Property(r => r.Title).HasMaxLength(500);
+        builder.Property(r => r.ArtistCredit).HasMaxLength(1000);
+        builder.Property(r => r.WikidataId).HasMaxLength(16);
+        builder.Property(r => r.WikipediaTitle).HasMaxLength(400);
         builder.Property(r => r.FirstReleaseDate).HasMaxLength(10);
         builder.Property(r => r.Label).HasMaxLength(400);
         builder.Property(r => r.CoverArtUrl).HasMaxLength(2048);
@@ -45,6 +51,7 @@ internal sealed class RecordingConfiguration : IEntityTypeConfiguration<Recordin
         builder.OwnsOne(r => r.Wikipedia, WikipediaArticleMapping.Configure);
 
         builder.Ignore(r => r.IsStudioAlbum);
+        builder.Ignore(r => r.Category);
     }
 }
 

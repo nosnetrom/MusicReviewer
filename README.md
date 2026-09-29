@@ -33,11 +33,25 @@ To use a database other than LocalDB, override the connection string:
 dotnet user-secrets --project src/MusicReviewer.Api set "ConnectionStrings:MusicReviewer" "<connection string>"
 ```
 
+To point the web dev server at an API on another port, set `API_PROXY_TARGET` (for example `http://localhost:5090`) before `npm run dev`.
+
+### Catalog data
+
+- Artists, albums, tracks and personnel are imported from MusicBrainz the first time a page asks for them. The page shows "Importing…" and fills in as the data arrives.
+- Every MusicBrainz call goes through a single rate-limited worker, capped at 1 request/sec as MusicBrainz requires. List and search calls return up to 25 items each. The settings are under `MusicBrainz` in `appsettings.json`.
+- In Development, the 24 featured artists in `Catalog:FeaturedArtists` are imported in the background on first run, at low priority, so the Home page fills up over a few minutes.
+
 ## Test
 
 ```powershell
 dotnet test --solution MusicReviewer.slnx          # unit tests + integration tests (needs Docker)
 cd src/musicreviewer-web; npm run test:unit -- --run
+```
+
+Tests use recorded MusicBrainz and Wikidata responses (`tests/MusicReviewer.UnitTests/Fixtures`) and never call the network. A smoke test against the real services runs only on request:
+
+```powershell
+dotnet test --project tests/MusicReviewer.IntegrationTests -- --explicit only
 ```
 
 ## Database migrations
@@ -61,4 +75,4 @@ dotnet ef migrations add <Name> --project src/MusicReviewer.Infrastructure --sta
 
 ## Attribution
 
-Recording and artist summaries come from [Wikipedia](https://www.wikipedia.org/) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Discography data comes from [MusicBrainz](https://musicbrainz.org/) (CC0).
+Recording and artist summaries come from [Wikipedia](https://www.wikipedia.org/) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Discography data comes from [MusicBrainz](https://musicbrainz.org/) (CC0), links to Wikipedia from [Wikidata](https://www.wikidata.org/) (CC0), and cover art from the [Cover Art Archive](https://coverartarchive.org/).

@@ -1,0 +1,2188 @@
+﻿[
+    {
+        "name":  "Miles Davis",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  27
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  13
+                       },
+                       {
+                           "name":  "modal jazz",
+                           "count":  11
+                       },
+                       {
+                           "name":  "cool jazz",
+                           "count":  10
+                       },
+                       {
+                           "name":  "hard bop",
+                           "count":  7
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "bebop",
+                           "count":  3
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  1
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classical",
+                           "count":  1
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz-funk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "John Coltrane",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  19
+                       },
+                       {
+                           "name":  "free jazz",
+                           "count":  11
+                       },
+                       {
+                           "name":  "hard bop",
+                           "count":  11
+                       },
+                       {
+                           "name":  "modal jazz",
+                           "count":  9
+                       },
+                       {
+                           "name":  "avant-garde jazz",
+                           "count":  9
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "spiritual jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "avant-garde",
+                           "count":  1
+                       },
+                       {
+                           "name":  "bebop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "instrumental jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Thelonious Monk",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  10
+                       },
+                       {
+                           "name":  "bebop",
+                           "count":  6
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "hard bop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "big band",
+                           "count":  3
+                       },
+                       {
+                           "name":  "stride",
+                           "count":  2
+                       },
+                       {
+                           "name":  "instrumental",
+                           "count":  1
+                       },
+                       {
+                           "name":  "free jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Ella Fitzgerald",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  13
+                       },
+                       {
+                           "name":  "swing",
+                           "count":  6
+                       },
+                       {
+                           "name":  "vocal jazz",
+                           "count":  6
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  3
+                       },
+                       {
+                           "name":  "big band",
+                           "count":  2
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "traditional pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "smooth jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Nina Simone",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  11
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  10
+                       },
+                       {
+                           "name":  "vocal jazz",
+                           "count":  4
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  4
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  3
+                       },
+                       {
+                           "name":  "soul jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "pop soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classical",
+                           "count":  1
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "The Beatles",
+        "genres":  [
+                       {
+                           "name":  "rock",
+                           "count":  50
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  31
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  25
+                       },
+                       {
+                           "name":  "psychedelic pop",
+                           "count":  17
+                       },
+                       {
+                           "name":  "merseybeat",
+                           "count":  17
+                       },
+                       {
+                           "name":  "psychedelic rock",
+                           "count":  9
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  4
+                       },
+                       {
+                           "name":  "rock and roll",
+                           "count":  4
+                       },
+                       {
+                           "name":  "britpop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "experimental rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "mainstream rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "folk rock",
+                           "count":  2
+                       }
+                   ]
+    },
+    {
+        "name":  "The Rolling Stones",
+        "genres":  [
+                       {
+                           "name":  "rock",
+                           "count":  38
+                       },
+                       {
+                           "name":  "blues rock",
+                           "count":  21
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  9
+                       },
+                       {
+                           "name":  "psychedelic rock",
+                           "count":  8
+                       },
+                       {
+                           "name":  "british rhythm \u0026 blues",
+                           "count":  7
+                       },
+                       {
+                           "name":  "rock and roll",
+                           "count":  4
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  4
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  2
+                       }
+                   ]
+    },
+    {
+        "name":  "Led Zeppelin",
+        "genres":  [
+                       {
+                           "name":  "hard rock",
+                           "count":  36
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  25
+                       },
+                       {
+                           "name":  "blues rock",
+                           "count":  20
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  10
+                       },
+                       {
+                           "name":  "heavy metal",
+                           "count":  6
+                       },
+                       {
+                           "name":  "folk rock",
+                           "count":  6
+                       },
+                       {
+                           "name":  "arena rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "progressive rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "rock and roll",
+                           "count":  1
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  1
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Pink Floyd",
+        "genres":  [
+                       {
+                           "name":  "progressive rock",
+                           "count":  59
+                       },
+                       {
+                           "name":  "psychedelic rock",
+                           "count":  47
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  30
+                       },
+                       {
+                           "name":  "art rock",
+                           "count":  23
+                       },
+                       {
+                           "name":  "space rock",
+                           "count":  15
+                       },
+                       {
+                           "name":  "progressive",
+                           "count":  10
+                       },
+                       {
+                           "name":  "rock opera",
+                           "count":  6
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  5
+                       },
+                       {
+                           "name":  "psychedelic",
+                           "count":  5
+                       },
+                       {
+                           "name":  "blues rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "experimental rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "acid rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "psychedelic pop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "symphonic rock",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "David Bowie",
+        "genres":  [
+                       {
+                           "name":  "art rock",
+                           "count":  22
+                       },
+                       {
+                           "name":  "glam rock",
+                           "count":  22
+                       },
+                       {
+                           "name":  "alternative rock",
+                           "count":  10
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  10
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  8
+                       },
+                       {
+                           "name":  "art pop",
+                           "count":  7
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  5
+                       },
+                       {
+                           "name":  "new wave",
+                           "count":  5
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  3
+                       }
+                   ]
+    },
+    {
+        "name":  "Radiohead",
+        "genres":  [
+                       {
+                           "name":  "alternative rock",
+                           "count":  43
+                       },
+                       {
+                           "name":  "art rock",
+                           "count":  30
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  19
+                       },
+                       {
+                           "name":  "electronic",
+                           "count":  14
+                       },
+                       {
+                           "name":  "experimental rock",
+                           "count":  14
+                       },
+                       {
+                           "name":  "indie rock",
+                           "count":  5
+                       },
+                       {
+                           "name":  "experimental",
+                           "count":  3
+                       },
+                       {
+                           "name":  "art pop",
+                           "count":  3
+                       },
+                       {
+                           "name":  "post-britpop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "britpop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "electronica",
+                           "count":  2
+                       },
+                       {
+                           "name":  "electronic rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "indietronica",
+                           "count":  1
+                       },
+                       {
+                           "name":  "post-grunge",
+                           "count":  1
+                       },
+                       {
+                           "name":  "ambient pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "crossover prog",
+                           "count":  1
+                       },
+                       {
+                           "name":  "idm",
+                           "count":  1
+                       },
+                       {
+                           "name":  "chamber pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Marvin Gaye",
+        "genres":  [
+                       {
+                           "name":  "soul",
+                           "count":  15
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  7
+                       },
+                       {
+                           "name":  "smooth soul",
+                           "count":  5
+                       },
+                       {
+                           "name":  "motown",
+                           "count":  5
+                       },
+                       {
+                           "name":  "pop soul",
+                           "count":  3
+                       },
+                       {
+                           "name":  "contemporary r\u0026b",
+                           "count":  1
+                       },
+                       {
+                           "name":  "progressive soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Aretha Franklin",
+        "genres":  [
+                       {
+                           "name":  "soul",
+                           "count":  8
+                       },
+                       {
+                           "name":  "gospel",
+                           "count":  5
+                       },
+                       {
+                           "name":  "southern soul",
+                           "count":  2
+                       },
+                       {
+                           "name":  "deep soul",
+                           "count":  2
+                       },
+                       {
+                           "name":  "quiet storm",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Stevie Wonder",
+        "genres":  [
+                       {
+                           "name":  "soul",
+                           "count":  11
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary r\u0026b",
+                           "count":  3
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  3
+                       },
+                       {
+                           "name":  "pop soul",
+                           "count":  2
+                       },
+                       {
+                           "name":  "motown",
+                           "count":  1
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Prince",
+        "genres":  [
+                       {
+                           "name":  "funk",
+                           "count":  22
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  13
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  9
+                       },
+                       {
+                           "name":  "contemporary r\u0026b",
+                           "count":  9
+                       },
+                       {
+                           "name":  "funk rock",
+                           "count":  8
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  4
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  4
+                       },
+                       {
+                           "name":  "neo-psychedelia",
+                           "count":  4
+                       },
+                       {
+                           "name":  "synth funk",
+                           "count":  3
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "minneapolis sound",
+                           "count":  2
+                       },
+                       {
+                           "name":  "dance-pop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "psychedelic soul",
+                           "count":  2
+                       },
+                       {
+                           "name":  "trap",
+                           "count":  1
+                       },
+                       {
+                           "name":  "psychedelic pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "pop soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dance-rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "deep house",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dance",
+                           "count":  1
+                       },
+                       {
+                           "name":  "afro house",
+                           "count":  1
+                       },
+                       {
+                           "name":  "club",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "organic house",
+                           "count":  1
+                       },
+                       {
+                           "name":  "house",
+                           "count":  1
+                       },
+                       {
+                           "name":  "disco",
+                           "count":  1
+                       },
+                       {
+                           "name":  "future bass",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Joni Mitchell",
+        "genres":  [
+                       {
+                           "name":  "folk",
+                           "count":  6
+                       },
+                       {
+                           "name":  "contemporary folk",
+                           "count":  6
+                       },
+                       {
+                           "name":  "jazz pop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  4
+                       },
+                       {
+                           "name":  "folk pop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  3
+                       },
+                       {
+                           "name":  "vocal jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "folk rock",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Bob Dylan",
+        "genres":  [
+                       {
+                           "name":  "folk rock",
+                           "count":  13
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  9
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  8
+                       },
+                       {
+                           "name":  "blues rock",
+                           "count":  7
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  6
+                       },
+                       {
+                           "name":  "country rock",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary folk",
+                           "count":  4
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  3
+                       },
+                       {
+                           "name":  "country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "traditional pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "roots rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "gospel",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Fleetwood Mac",
+        "genres":  [
+                       {
+                           "name":  "rock",
+                           "count":  19
+                       },
+                       {
+                           "name":  "soft rock",
+                           "count":  15
+                       },
+                       {
+                           "name":  "blues rock",
+                           "count":  13
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  11
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  7
+                       },
+                       {
+                           "name":  "british blues",
+                           "count":  6
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  5
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "art pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Michael Jackson",
+        "genres":  [
+                       {
+                           "name":  "pop",
+                           "count":  36
+                       },
+                       {
+                           "name":  "dance-pop",
+                           "count":  20
+                       },
+                       {
+                           "name":  "disco",
+                           "count":  19
+                       },
+                       {
+                           "name":  "contemporary r\u0026b",
+                           "count":  17
+                       },
+                       {
+                           "name":  "pop soul",
+                           "count":  9
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  7
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  4
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "new jack swing",
+                           "count":  3
+                       },
+                       {
+                           "name":  "dance",
+                           "count":  2
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "ballad",
+                           "count":  1
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "boogie",
+                           "count":  1
+                       },
+                       {
+                           "name":  "pop rap",
+                           "count":  1
+                       },
+                       {
+                           "name":  "hip hop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Kendrick Lamar",
+        "genres":  [
+                       {
+                           "name":  "hip hop",
+                           "count":  17
+                       },
+                       {
+                           "name":  "conscious hip hop",
+                           "count":  13
+                       },
+                       {
+                           "name":  "jazz rap",
+                           "count":  11
+                       },
+                       {
+                           "name":  "west coast hip hop",
+                           "count":  9
+                       },
+                       {
+                           "name":  "hardcore hip hop",
+                           "count":  6
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "pop rap",
+                           "count":  2
+                       },
+                       {
+                           "name":  "alternative hip hop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "trap",
+                           "count":  2
+                       },
+                       {
+                           "name":  "future bass",
+                           "count":  1
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  1
+                       },
+                       {
+                           "name":  "disco",
+                           "count":  1
+                       },
+                       {
+                           "name":  "gangsta rap",
+                           "count":  1
+                       },
+                       {
+                           "name":  "house",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dance",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Ms. Lauryn Hill",
+        "genres":  [
+                       {
+                           "name":  "hip hop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "neo soul",
+                           "count":  3
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary r\u0026b",
+                           "count":  1
+                       },
+                       {
+                           "name":  "alternative hip hop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Kraftwerk",
+        "genres":  [
+                       {
+                           "name":  "electronic",
+                           "count":  18
+                       },
+                       {
+                           "name":  "synth-pop",
+                           "count":  11
+                       },
+                       {
+                           "name":  "krautrock",
+                           "count":  11
+                       },
+                       {
+                           "name":  "electro",
+                           "count":  7
+                       },
+                       {
+                           "name":  "techno",
+                           "count":  5
+                       },
+                       {
+                           "name":  "progressive electronic",
+                           "count":  3
+                       }
+                   ]
+    },
+    {
+        "name":  "Bob Marley \u0026 The Wailers",
+        "genres":  [
+                       {
+                           "name":  "reggae",
+                           "count":  24
+                       },
+                       {
+                           "name":  "roots reggae",
+                           "count":  11
+                       },
+                       {
+                           "name":  "ska",
+                           "count":  3
+                       },
+                       {
+                           "name":  "rocksteady",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dub",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jamaican ska",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Johnny Cash",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  27
+                       },
+                       {
+                           "name":  "rockabilly",
+                           "count":  9
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  7
+                       },
+                       {
+                           "name":  "country gospel",
+                           "count":  6
+                       },
+                       {
+                           "name":  "americana",
+                           "count":  5
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  4
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  4
+                       },
+                       {
+                           "name":  "gospel",
+                           "count":  3
+                       },
+                       {
+                           "name":  "rock and roll",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Hank Williams",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  8
+                       },
+                       {
+                           "name":  "honky tonk",
+                           "count":  7
+                       },
+                       {
+                           "name":  "traditional country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  1
+                       },
+                       {
+                           "name":  "rockabilly",
+                           "count":  1
+                       },
+                       {
+                           "name":  "poetry",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country gospel",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country blues",
+                           "count":  1
+                       },
+                       {
+                           "name":  "gospel",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Patsy Cline",
+        "genres":  [
+                       {
+                           "name":  "nashville sound",
+                           "count":  2
+                       },
+                       {
+                           "name":  "traditional country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "honky tonk",
+                           "count":  2
+                       },
+                       {
+                           "name":  "country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "gospel",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Dolly Parton",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  17
+                       },
+                       {
+                           "name":  "bluegrass",
+                           "count":  7
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  5
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  5
+                       },
+                       {
+                           "name":  "nashville sound",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "progressive country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "urban cowboy",
+                           "count":  1
+                       },
+                       {
+                           "name":  "traditional country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dance",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "ballad",
+                           "count":  1
+                       },
+                       {
+                           "name":  "honky tonk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "hip hop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Willie Nelson",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  8
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  6
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  2
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  1
+                       },
+                       {
+                           "name":  "americana",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Merle Haggard",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  4
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "christmas music",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Loretta Lynn",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  7
+                       },
+                       {
+                           "name":  "honky tonk",
+                           "count":  4
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Waylon Jennings",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  7
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  6
+                       },
+                       {
+                           "name":  "progressive country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "country rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "nashville sound",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "George Jones",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  5
+                       },
+                       {
+                           "name":  "honky tonk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Tammy Wynette",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  3
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Buck Owens",
+        "genres":  [
+                       {
+                           "name":  "honky tonk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "bakersfield sound",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Emmylou Harris",
+        "genres":  [
+                       {
+                           "name":  "folk",
+                           "count":  4
+                       },
+                       {
+                           "name":  "country rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "americana",
+                           "count":  2
+                       },
+                       {
+                           "name":  "country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "progressive country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country folk",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Marty Robbins",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  4
+                       }
+                   ]
+    },
+    {
+        "name":  "Gene Autry",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  3
+                       },
+                       {
+                           "name":  "traditional country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "western",
+                           "count":  1
+                       },
+                       {
+                           "name":  "christmas music",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country yodeling",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Bob Wills and His Texas Playboys",
+        "genres":  [
+                       {
+                           "name":  "western swing",
+                           "count":  2
+                       },
+                       {
+                           "name":  "classic country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "traditional country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "The Carter Family",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  2
+                       }
+                   ]
+    },
+    {
+        "name":  "Kris Kristofferson",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  4
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  2
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "folk",
+                           "count":  2
+                       },
+                       {
+                           "name":  "americana",
+                           "count":  1
+                       },
+                       {
+                           "name":  "progressive country",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Glen Campbell",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  5
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "nashville sound",
+                           "count":  1
+                       },
+                       {
+                           "name":  "folk pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "baroque pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Garth Brooks",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  5
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Shania Twain",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  9
+                       },
+                       {
+                           "name":  "country pop",
+                           "count":  5
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary country",
+                           "count":  2
+                       },
+                       {
+                           "name":  "rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "soft rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "pop rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "country rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dance-pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Chris Stapleton",
+        "genres":  [
+                       {
+                           "name":  "country",
+                           "count":  3
+                       },
+                       {
+                           "name":  "singer-songwriter",
+                           "count":  1
+                       },
+                       {
+                           "name":  "southern rock",
+                           "count":  1
+                       },
+                       {
+                           "name":  "bluegrass",
+                           "count":  1
+                       },
+                       {
+                           "name":  "outlaw country",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Weather Report",
+        "genres":  [
+                       {
+                           "name":  "jazz fusion",
+                           "count":  9
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  5
+                       },
+                       {
+                           "name":  "jazz rock",
+                           "count":  3
+                       },
+                       {
+                           "name":  "jazz-funk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Return to Forever",
+        "genres":  [
+                       {
+                           "name":  "jazz fusion",
+                           "count":  3
+                       },
+                       {
+                           "name":  "jazz rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "jazz-funk",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Mahavishnu Orchestra",
+        "genres":  [
+                       {
+                           "name":  "jazz rock",
+                           "count":  4
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  4
+                       },
+                       {
+                           "name":  "jazz-funk",
+                           "count":  2
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Herbie Hancock",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  11
+                       },
+                       {
+                           "name":  "hard bop",
+                           "count":  6
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  6
+                       },
+                       {
+                           "name":  "jazz-funk",
+                           "count":  5
+                       },
+                       {
+                           "name":  "electro",
+                           "count":  5
+                       },
+                       {
+                           "name":  "modal jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  2
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "soul jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "classical",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Chick Corea",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  5
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  3
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "avant-garde jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "world fusion",
+                           "count":  1
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "latin jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Jaco Pastorius",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  2
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  2
+                       }
+                   ]
+    },
+    {
+        "name":  "Pat Metheny Group",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  4
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  2
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "instrumental jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "The Brecker Brothers",
+        "genres":  [
+                       {
+                           "name":  "jazz fusion",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Allan Holdsworth",
+        "genres":  [
+                       {
+                           "name":  "jazz fusion",
+                           "count":  3
+                       },
+                       {
+                           "name":  "progressive rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "instrumental rock",
+                           "count":  2
+                       },
+                       {
+                           "name":  "jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "jazz rock",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Yellowjackets",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  5
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  3
+                       }
+                   ]
+    },
+    {
+        "name":  "Snarky Puppy",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  5
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  4
+                       },
+                       {
+                           "name":  "funk",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Keith Jarrett",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  9
+                       },
+                       {
+                           "name":  "avant-garde jazz",
+                           "count":  4
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  4
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  3
+                       },
+                       {
+                           "name":  "classical",
+                           "count":  3
+                       },
+                       {
+                           "name":  "western classical",
+                           "count":  1
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Wynton Marsalis",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  6
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "modern classical",
+                           "count":  2
+                       },
+                       {
+                           "name":  "swing",
+                           "count":  1
+                       },
+                       {
+                           "name":  "third stream",
+                           "count":  1
+                       },
+                       {
+                           "name":  "dixieland",
+                           "count":  1
+                       },
+                       {
+                           "name":  "hard bop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "blues",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Brad Mehldau",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  5
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "third stream",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Diana Krall",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  12
+                       },
+                       {
+                           "name":  "vocal jazz",
+                           "count":  8
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "pop",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Esperanza Spalding",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "vocal jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  1
+                       },
+                       {
+                           "name":  "experimental",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Robert Glasper",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  3
+                       },
+                       {
+                           "name":  "neo soul",
+                           "count":  2
+                       },
+                       {
+                           "name":  "progressive",
+                           "count":  1
+                       },
+                       {
+                           "name":  "soul",
+                           "count":  1
+                       },
+                       {
+                           "name":  "r\u0026b",
+                           "count":  1
+                       },
+                       {
+                           "name":  "post-bop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "hip hop",
+                           "count":  1
+                       },
+                       {
+                           "name":  "instrumental jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       }
+                   ]
+    },
+    {
+        "name":  "Kamasi Washington",
+        "genres":  [
+                       {
+                           "name":  "jazz",
+                           "count":  7
+                       },
+                       {
+                           "name":  "spiritual jazz",
+                           "count":  2
+                       },
+                       {
+                           "name":  "bebop",
+                           "count":  2
+                       },
+                       {
+                           "name":  "contemporary jazz",
+                           "count":  1
+                       },
+                       {
+                           "name":  "jazz fusion",
+                           "count":  1
+                       }
+                   ]
+    }
+]

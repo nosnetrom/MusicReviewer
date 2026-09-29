@@ -33,7 +33,8 @@ const isDev = import.meta.env.DEV
 
   <footer class="app-footer">
     <p>
-      Discography data from <a href="https://musicbrainz.org/">MusicBrainz</a>. Summaries from
+      Discography data from <a href="https://musicbrainz.org/">MusicBrainz</a>. Cover art from the
+      <a href="https://coverartarchive.org/">Cover Art Archive</a>. Summaries from
       <a href="https://www.wikipedia.org/">Wikipedia</a>, available under
       <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
     </p>

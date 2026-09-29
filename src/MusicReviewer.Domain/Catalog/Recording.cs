@@ -10,6 +10,10 @@ public class Recording
     public Artist Artist { get; set; } = null!;
     public Guid MusicBrainzId { get; set; }
     public required string Title { get; set; }
+
+    /// <summary>Display credit, e.g. "Miles Davis &amp; Gil Evans".</summary>
+    public string? ArtistCredit { get; set; }
+
     public ReleaseType PrimaryType { get; set; }
     public SecondaryReleaseTypes SecondaryTypes { get; set; }
 
@@ -20,10 +24,22 @@ public class Recording
     public string? Label { get; set; }
     public string? CoverArtUrl { get; set; }
 
+    public string? WikidataId { get; set; }
+    public string? WikipediaTitle { get; set; }
+    public int? WikidataSitelinks { get; set; }
+
     /// <summary>Ranking signal used to order an artist's major recordings; higher is more notable.</summary>
     public double NotabilityScore { get; set; }
 
     public DateTime? LastSyncedUtc { get; set; }
+
+    /// <summary>State of the track list and personnel import.</summary>
+    public SyncStatus DetailsSyncStatus { get; set; }
+
+    public DateTime? DetailsSyncedUtc { get; set; }
+
+    /// <summary>The release (edition) whose tracks and credits are shown.</summary>
+    public Guid? RepresentativeReleaseId { get; set; }
 
     public WikipediaArticle? Wikipedia { get; set; }
     public List<Track> Tracks { get; } = [];
@@ -32,6 +48,18 @@ public class Recording
 
     /// <summary>A plain studio album: shown in an artist's default "major recordings" view.</summary>
     public bool IsStudioAlbum => PrimaryType == ReleaseType.Album && SecondaryTypes == SecondaryReleaseTypes.None;
+
+    public ReleaseCategories Category => CategoryOf(SecondaryTypes);
+
+    public static ReleaseCategories CategoryOf(SecondaryReleaseTypes secondary) => secondary switch
+    {
+        SecondaryReleaseTypes.None => ReleaseCategories.Studio,
+        _ when secondary.HasFlag(SecondaryReleaseTypes.Live) => ReleaseCategories.Live,
+        _ when secondary.HasFlag(SecondaryReleaseTypes.Compilation) => ReleaseCategories.Compilation,
+        _ => ReleaseCategories.None,
+    };
+
+    public void RecalculateNotability() => NotabilityScore = Notability.Score(this);
 }
 
 public enum ReleaseType

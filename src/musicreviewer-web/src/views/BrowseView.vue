@@ -1,16 +1,34 @@
 <script setup>
-import { reactive } from 'vue'
+import { computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import EmptyState from '@/components/EmptyState.vue'
 import GlassChip from '@/components/glass/GlassChip.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
-import { decades, genres, previewRecordings } from '@/data/previewRecordings'
+import { browseRecordings, getGenres } from '@/api/catalog'
+import { usePolling } from '@/composables/usePolling'
 
-const selectedGenres = reactive(new Set())
-const selectedDecades = reactive(new Set())
+const decades = ['1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s']
 
-function toggle(set, value, on) {
-  if (on) set.add(value)
-  else set.delete(value)
+const route = useRoute()
+const router = useRouter()
+
+// Filters live in the URL (?genre=jazz&decade=1970s) so views are shareable.
+const genre = computed(() => (typeof route.query.genre === 'string' ? route.query.genre : null))
+const decade = computed(() => (typeof route.query.decade === 'string' ? route.query.decade : null))
+
+const { data: genres } = usePolling(({ signal }) => getGenres({ signal }))
+const results = usePolling(({ signal }) =>
+  browseRecordings({ genre: genre.value, decade: decade.value }, { signal }),
+)
+
+watch([genre, decade], () => results.refresh())
+
+function choose(key, value, selected) {
+  router.replace({ query: { ...route.query, [key]: selected ? value : undefined } })
 }
+
+const recordings = computed(() => results.data.value?.recordings ?? [])
+const loaded = computed(() => results.data.value !== null)
 </script>
 
 <template>
@@ -20,16 +38,16 @@ function toggle(set, value, on) {
       <h1 class="browse__title">Explore by genre and era</h1>
     </header>
 
-    <section aria-labelledby="genres-heading">
+    <section v-if="genres?.length" aria-labelledby="genres-heading">
       <h2 id="genres-heading" class="browse__label">Genres</h2>
       <div class="chips">
         <GlassChip
-          v-for="genre in genres"
-          :key="genre"
-          :selected="selectedGenres.has(genre)"
-          @update:selected="toggle(selectedGenres, genre, $event)"
+          v-for="g in genres"
+          :key="g.slug"
+          :selected="genre === g.slug"
+          @update:selected="choose('genre', g.slug, $event)"
         >
-          {{ genre }}
+          {{ g.name }}
         </GlassChip>
       </div>
     </section>
@@ -38,17 +56,23 @@ function toggle(set, value, on) {
       <h2 id="decades-heading" class="browse__label">Decades</h2>
       <div class="chips">
         <GlassChip
-          v-for="decade in decades"
-          :key="decade"
-          :selected="selectedDecades.has(decade)"
-          @update:selected="toggle(selectedDecades, decade, $event)"
+          v-for="d in decades"
+          :key="d"
+          :selected="decade === d"
+          @update:selected="choose('decade', d, $event)"
         >
-          {{ decade }}
+          {{ d }}
         </GlassChip>
       </div>
     </section>
 
-    <RecordingGrid :recordings="previewRecordings" :linked="false" />
+    <EmptyState v-if="loaded && recordings.length === 0" title="Nothing here yet" icon="disc">
+      <p>
+        No imported albums match these filters. Try another genre or decade, or search for an
+        artist.
+      </p>
+    </EmptyState>
+    <RecordingGrid v-else :recordings="recordings" :placeholders="12" />
   </div>
 </template>
 
