@@ -9,11 +9,13 @@ export class ApiError extends Error {
    * @param {number} status HTTP status code
    * @param {object | null} problem RFC 7807 problem details, when the API returned one
    */
-  constructor(status, problem) {
+  constructor(status, problem, retryAfter) {
     super(problem?.title ?? `Request failed with status ${status}`)
     this.name = 'ApiError'
     this.status = status
     this.problem = problem
+    const seconds = Number(retryAfter)
+    this.retryAfterMs = Number.isFinite(seconds) ? Math.max(0, seconds * 1000) : null
   }
 }
 
@@ -40,7 +42,7 @@ export async function getJson(path, { signal } = {}) {
   const body = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw new ApiError(response.status, body)
+    throw new ApiError(response.status, body, response.headers.get('Retry-After'))
   }
 
   return body

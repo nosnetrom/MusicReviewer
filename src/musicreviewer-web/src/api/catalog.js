@@ -57,10 +57,11 @@ export const getArtist = (mbid, options) => getJson(`/api/artists/${mbid}`, opti
 /**
  * @param {string} mbid
  * @param {{ type?: 'studio' | 'ep' | 'live' | 'compilation' | 'all', sort?: 'notability' | 'date' }} [filters]
- * @returns {Promise<{ filter: string, syncStatus: SyncStatus, recordings: RecordingSummary[] }>}
+ * @param {{ offset?: number, limit?: number }} [page]
+ * @returns {Promise<{ filter: string, syncStatus: SyncStatus, recordings: RecordingSummary[], offset: number, total: number, hasMore: boolean }>}
  */
-export const getArtistRecordings = (mbid, { type, sort } = {}, options) =>
-  getJson(`/api/artists/${mbid}/recordings${query({ type, sort })}`, options)
+export const getArtistRecordings = (mbid, { type, sort, offset, limit } = {}, options) =>
+  getJson(`/api/artists/${mbid}/recordings${query({ type, sort, offset, limit })}`, options)
 
 /** @returns {Promise<RecordingSummary & { detailsStatus: SyncStatus, wikipediaTitle: string | null, summary: WikipediaSummary | null }>} plus tracks and credits */
 export const getRecording = (mbid, options) => getJson(`/api/recordings/${mbid}`, options)

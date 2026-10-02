@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import EmptyState from '@/components/EmptyState.vue'
 import SyncNotice from '@/components/SyncNotice.vue'
@@ -27,6 +27,7 @@ const filters = [
 ]
 const filter = ref('studio')
 const sort = ref('notability')
+const RECORDINGS_PAGE_SIZE = 60
 
 const artist = usePolling(({ signal }) => getArtist(props.id, { signal }), {
   interval: 3000,
@@ -36,11 +37,20 @@ const artist = usePolling(({ signal }) => getArtist(props.id, { signal }), {
 // The artist request creates the artist on first view, so recordings wait for it.
 const recordings = usePolling(
   ({ signal }) =>
-    getArtistRecordings(props.id, { type: filter.value, sort: sort.value }, { signal }),
+    getArtistRecordings(
+      props.id,
+      { type: filter.value, sort: sort.value, limit: RECORDINGS_PAGE_SIZE },
+      { signal },
+    ),
   { interval: 2000, until: (r) => isSettled(r.syncStatus), immediate: false },
 )
 
 let recordingsStarted = false
+let moreController = null
+const additionalRecordings = ref([])
+const hasMoreRecordings = ref(false)
+const loadingMoreRecordings = ref(false)
+const moreRecordingsError = ref(null)
 watch(artist.data, (a) => {
   if (a && !recordingsStarted) {
     recordingsStarted = true
@@ -49,12 +59,56 @@ watch(artist.data, (a) => {
   if (a) document.title = `${a.name} · MusicReviewer`
 })
 
-watch([filter, sort], () => recordings.refresh())
+watch(recordings.data, (page) => {
+  if (page) hasMoreRecordings.value = page.hasMore
+})
+
+watch([filter, sort], () => {
+  moreController?.abort()
+  additionalRecordings.value = []
+  hasMoreRecordings.value = false
+  moreRecordingsError.value = null
+  recordings.refresh()
+})
 
 function retry() {
+  moreController?.abort()
+  additionalRecordings.value = []
+  moreRecordingsError.value = null
   artist.refresh()
   if (recordingsStarted) recordings.refresh()
 }
+
+async function loadMoreRecordings() {
+  if (!hasMoreRecordings.value || loadingMoreRecordings.value) return
+
+  const controller = (moreController = new AbortController())
+  loadingMoreRecordings.value = true
+  moreRecordingsError.value = null
+  try {
+    const page = await getArtistRecordings(
+      props.id,
+      {
+        type: filter.value,
+        sort: sort.value,
+        offset: list.value.length,
+        limit: RECORDINGS_PAGE_SIZE,
+      },
+      { signal: controller.signal },
+    )
+    if (moreController === controller) {
+      additionalRecordings.value = [...additionalRecordings.value, ...page.recordings]
+      hasMoreRecordings.value = page.hasMore
+    }
+  } catch (error) {
+    if (moreController === controller && error?.name !== 'AbortError')
+      moreRecordingsError.value = error
+  } finally {
+    if (moreController === controller) loadingMoreRecordings.value = false
+  }
+}
+
+onBeforeUnmount(() => moreController?.abort())
 
 const meta = computed(() => {
   const a = artist.data.value
@@ -73,7 +127,10 @@ const styles = computed(() => {
   return a.styles.filter((s) => !broad.has(s.toLowerCase()))
 })
 
-const list = computed(() => recordings.data.value?.recordings ?? [])
+const list = computed(() => [
+  ...(recordings.data.value?.recordings ?? []),
+  ...additionalRecordings.value,
+])
 const status = computed(
   () => recordings.data.value?.syncStatus ?? artist.data.value?.syncStatus ?? 'syncing',
 )
@@ -206,6 +263,23 @@ useCoverBackdrop(() => {
         icon="disc"
       />
       <RecordingGrid v-else :recordings="list" :placeholders="12" :show-artist="false" />
+      <p v-if="moreRecordingsError" class="artist__load-error" role="alert">
+        {{
+          friendlyApiMessage(
+            moreRecordingsError,
+            'Couldn’t load more recordings. Please try again.',
+          )
+        }}
+      </p>
+      <GlassButton
+        v-if="hasMoreRecordings"
+        size="lg"
+        :disabled="loadingMoreRecordings"
+        :aria-busy="loadingMoreRecordings"
+        @click="loadMoreRecordings"
+      >
+        {{ loadingMoreRecordings ? 'Loading…' : 'Load more recordings' }}
+      </GlassButton>
     </section>
   </div>
 </template>

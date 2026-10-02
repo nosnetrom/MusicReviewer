@@ -24,13 +24,13 @@ describe('usePolling', () => {
     const statuses = ['syncing', 'syncing', 'ready']
     const load = vi.fn(async () => ({ status: statuses[load.mock.calls.length - 1] }))
     const poll = scope.run(() =>
-      usePolling(load, { interval: 2000, until: (d) => d.status === 'ready' }),
+      usePolling(load, { interval: 2000, jitterRatio: 0, until: (d) => d.status === 'ready' }),
     )
 
     await flush()
     expect(poll.data.value.status).toBe('syncing')
 
-    await vi.advanceTimersByTimeAsync(2000)
+    await vi.advanceTimersByTimeAsync(4000)
     await vi.advanceTimersByTimeAsync(2000)
     expect(poll.data.value.status).toBe('ready')
     expect(load).toHaveBeenCalledTimes(3)
@@ -41,7 +41,7 @@ describe('usePolling', () => {
 
   it('stops when its component scope is disposed', async () => {
     const load = vi.fn(async () => ({ status: 'syncing' }))
-    scope.run(() => usePolling(load, { interval: 1000, until: () => false }))
+    scope.run(() => usePolling(load, { interval: 1000, jitterRatio: 0, until: () => false }))
     await flush()
 
     scope.stop()
@@ -65,17 +65,30 @@ describe('usePolling', () => {
     expect(poll.data.value).toBe('ok')
   })
 
-  it('exposes errors and stops polling', async () => {
+  it('retries transient errors with exponential delay', async () => {
     const failure = Object.assign(new Error('nope'), { status: 503 })
-    const load = vi.fn(async () => {
-      throw failure
-    })
-    const poll = scope.run(() => usePolling(load, { interval: 1000, until: () => false }))
+    const load = vi.fn().mockRejectedValueOnce(failure).mockResolvedValue({ status: 'ready' })
+    const poll = scope.run(() => usePolling(load, { interval: 1000, jitterRatio: 0 }))
 
     await flush()
-    await vi.advanceTimersByTimeAsync(5000)
+    await vi.advanceTimersByTimeAsync(1000)
 
-    expect(poll.error.value).toBe(failure)
+    expect(poll.error.value).toBeNull()
+    expect(poll.data.value).toEqual({ status: 'ready' })
+    expect(load).toHaveBeenCalledTimes(2)
+  })
+
+  it('waits at least the server Retry-After duration', async () => {
+    const failure = Object.assign(new Error('slow down'), { status: 429, retryAfterMs: 5000 })
+    const load = vi.fn().mockRejectedValueOnce(failure).mockResolvedValue({ status: 'ready' })
+    const poll = scope.run(() => usePolling(load, { interval: 1000, jitterRatio: 0 }))
+
+    await flush()
+    await vi.advanceTimersByTimeAsync(4999)
     expect(load).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+
+    expect(poll.data.value).toEqual({ status: 'ready' })
+    expect(load).toHaveBeenCalledTimes(2)
   })
 })

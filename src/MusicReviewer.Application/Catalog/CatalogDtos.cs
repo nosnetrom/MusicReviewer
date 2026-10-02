@@ -58,7 +58,13 @@ public sealed record RecordingSummaryDto(
     double Notability,
     bool HasWikipediaArticle);
 
-public sealed record ArtistRecordingsDto(RecordingFilter Filter, SyncStatus SyncStatus, IReadOnlyList<RecordingSummaryDto> Recordings);
+public sealed record ArtistRecordingsDto(
+    RecordingFilter Filter,
+    SyncStatus SyncStatus,
+    IReadOnlyList<RecordingSummaryDto> Recordings,
+    int Offset,
+    int Total,
+    bool HasMore);
 
 public sealed record TrackDto(int Disc, int Position, string Title, int? DurationMs);
 

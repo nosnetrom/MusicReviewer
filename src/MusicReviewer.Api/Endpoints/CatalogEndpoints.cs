@@ -18,7 +18,7 @@ public static class CatalogEndpoints
             .WithSummary("Artist details. The first request for an artist queues its discography import.");
 
         api.MapGet("/artists/{mbid:guid}/recordings", GetArtistRecordingsAsync)
-            .WithSummary("An artist's recordings. type: studio | ep | live | compilation | all; sort: notability | date.");
+            .WithSummary("A page of an artist's recordings. type: studio | ep | live | compilation | all; sort: notability | date.");
 
         api.MapGet("/recordings/{mbid:guid}", (Guid mbid, CatalogService catalog, CancellationToken ct) => catalog.GetRecordingAsync(mbid, ct))
             .WithSummary("Recording details, track list and personnel.");
@@ -45,7 +45,14 @@ public static class CatalogEndpoints
         return TypedResults.Ok(await catalog.SearchAsync(q, ct));
     }
 
-    private static async Task<IResult> GetArtistRecordingsAsync(Guid mbid, string? type, string? sort, CatalogService catalog, CancellationToken ct)
+    private static async Task<IResult> GetArtistRecordingsAsync(
+        Guid mbid,
+        string? type,
+        string? sort,
+        int? offset,
+        int? limit,
+        CatalogService catalog,
+        CancellationToken ct)
     {
         var errors = new Dictionary<string, string[]>();
 
@@ -56,11 +63,15 @@ public static class CatalogEndpoints
         var order = RecordingSort.Notability;
         if (sort is not null && !TryParseName(sort, out order))
             errors["sort"] = ["Use notability or date."];
+        if (offset < 0)
+            errors["offset"] = ["Must be 0 or more."];
+        if (limit is < 1 or > CatalogService.ArtistRecordingsPageSize)
+            errors["limit"] = [$"Must be between 1 and {CatalogService.ArtistRecordingsPageSize}."];
 
         if (errors.Count > 0)
             return TypedResults.ValidationProblem(errors);
 
-        return TypedResults.Ok(await catalog.GetArtistRecordingsAsync(mbid, filter, order, ct));
+        return TypedResults.Ok(await catalog.GetArtistRecordingsAsync(mbid, filter, order, offset ?? 0, limit, ct));
     }
 
     private static async Task<IResult> BrowseRecordingsAsync(string? genre, string? decade, int? offset, int? limit, CatalogService catalog, CancellationToken ct)

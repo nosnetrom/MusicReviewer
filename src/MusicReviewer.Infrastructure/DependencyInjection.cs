@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using MusicReviewer.Application.Abstractions;
 using MusicReviewer.Application.Ingestion;
 using MusicReviewer.Infrastructure.CoverArt;
+using MusicReviewer.Infrastructure.Catalog;
 using MusicReviewer.Infrastructure.Ingestion;
 using MusicReviewer.Infrastructure.MusicBrainz;
 using MusicReviewer.Infrastructure.Persistence;
@@ -31,6 +32,8 @@ public static class DependencyInjection
 
     private static void AddPersistence(IServiceCollection services)
     {
+        services.AddScoped<IBrowseRecordingQuery, BrowseRecordingQuery>();
+
         // Resolve the connection string lazily so test hosts can override configuration.
         services.AddDbContext<MusicReviewerDbContext>((sp, options) =>
         {

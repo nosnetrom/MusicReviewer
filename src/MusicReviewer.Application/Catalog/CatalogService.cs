@@ -17,6 +17,7 @@ namespace MusicReviewer.Application.Catalog;
 /// </summary>
 public sealed partial class CatalogService(
     IMusicReviewerDbContext db,
+    IBrowseRecordingQuery browseRecordingQuery,
     IMusicBrainzClient musicBrainz,
     IIngestionScheduler scheduler,
     IMemoryCache cache,
@@ -30,10 +31,8 @@ public sealed partial class CatalogService(
     public const int MaxSearchQueryLength = 120;
     /// <summary>Albums per browse page; "Load more" fetches the next page.</summary>
     public const int BrowsePageSize = 60;
+    public const int ArtistRecordingsPageSize = 60;
     public const int MaxBrowseRecordingsPerArtist = 3;
-
-    /// <summary>Upper bound on albums considered for one browse view.</summary>
-    private const int BrowseCandidates = 5000;
     private const int MaxGenres = 40;
 
     private static readonly string[] RoleOrder =
@@ -49,7 +48,7 @@ public sealed partial class CatalogService(
             return new SearchResultDto(text, [], RemoteAvailable: true);
 
         var local = await db.Artists.AsNoTracking()
-            .Where(a => a.NormalizedName.Contains(normalized))
+            .Where(a => a.NormalizedName.StartsWith(normalized))
             .OrderByDescending(a => a.IsFeatured)
             .ThenBy(a => a.Name.Length)
             .Take(MaxSearchResults)
@@ -77,6 +76,9 @@ public sealed partial class CatalogService(
     /// <summary>Names (with broad genres) of imported artists, for the search field's rotating examples.</summary>
     public async Task<IReadOnlyList<ArtistSuggestionDto>> GetSearchSuggestionsAsync(CancellationToken cancellationToken)
     {
+        if (cache.TryGetValue("catalog:search-suggestions", out IReadOnlyList<ArtistSuggestionDto>? cached) && cached is not null)
+            return cached;
+
         var artists = await db.Artists.AsNoTracking()
             .Where(a => a.LastSyncedUtc != null && a.Name != "")
             .OrderBy(a => a.SortName)
@@ -84,7 +86,9 @@ public sealed partial class CatalogService(
             .Select(a => new { a.Name, Genres = a.Genres.Select(g => g.Slug).ToList() })
             .ToListAsync(cancellationToken);
 
-        return [.. artists.Select(a => new ArtistSuggestionDto(a.Name, a.Genres))];
+        IReadOnlyList<ArtistSuggestionDto> suggestions = [.. artists.Select(a => new ArtistSuggestionDto(a.Name, a.Genres))];
+        cache.Set("catalog:search-suggestions", suggestions, CacheEntry(TimeSpan.FromMinutes(5)));
+        return suggestions;
     }
 
     private async Task<(IReadOnlyList<ArtistInfo> Results, bool Available)> SearchRemoteAsync(string text, string normalized, CancellationToken cancellationToken)
@@ -136,7 +140,13 @@ public sealed partial class CatalogService(
             artist.SyncStatus, count, WikipediaSummaryDto.From(artist.Wikipedia));
     }
 
-    public async Task<ArtistRecordingsDto> GetArtistRecordingsAsync(Guid mbid, RecordingFilter filter, RecordingSort sort, CancellationToken cancellationToken)
+    public async Task<ArtistRecordingsDto> GetArtistRecordingsAsync(
+        Guid mbid,
+        RecordingFilter filter,
+        RecordingSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
     {
         var artist = await db.Artists.FirstOrDefaultAsync(a => a.MusicBrainzId == mbid, cancellationToken)
             ?? throw new NotFoundException($"Artist {mbid} has not been loaded.");
@@ -167,8 +177,11 @@ public sealed partial class CatalogService(
             ? query.OrderBy(r => r.FirstReleaseDate == null).ThenBy(r => r.FirstReleaseDate).ThenBy(r => r.Title)
             : query.OrderByDescending(r => r.NotabilityScore).ThenBy(r => r.FirstReleaseDate);
 
-        var recordings = await query.Select(ToRecordingSummary).ToListAsync(cancellationToken);
-        return new ArtistRecordingsDto(filter, status, recordings);
+        var first = Math.Max(0, offset);
+        var size = Math.Clamp(limit ?? ArtistRecordingsPageSize, 1, ArtistRecordingsPageSize);
+        var total = await query.CountAsync(cancellationToken);
+        var recordings = await query.Skip(first).Take(size).Select(ToRecordingSummary).ToListAsync(cancellationToken);
+        return new ArtistRecordingsDto(filter, status, recordings, first, total, first + recordings.Count < total);
     }
 
     // ---- Recordings --------------------------------------------------------------------
@@ -208,6 +221,9 @@ public sealed partial class CatalogService(
 
     public async Task<FeaturedDto> GetFeaturedAsync(CancellationToken cancellationToken)
     {
+        if (cache.TryGetValue("catalog:featured", out FeaturedDto? cached) && cached is not null)
+            return cached;
+
         var artists = await db.Artists.AsNoTracking()
             .Where(a => a.IsFeatured && a.LastSyncedUtc != null)
             .OrderBy(a => a.SortName)
@@ -229,11 +245,16 @@ public sealed partial class CatalogService(
             .Take(MaxFeaturedRecordings)
             .ToList();
 
-        return new FeaturedDto(artists, recordings);
+        var featured = new FeaturedDto(artists, recordings);
+        cache.Set("catalog:featured", featured, CacheEntry(TimeSpan.FromSeconds(10)));
+        return featured;
     }
 
     public async Task<IReadOnlyList<GenreListItemDto>> GetGenresAsync(CancellationToken cancellationToken)
     {
+        if (cache.TryGetValue("catalog:genres", out IReadOnlyList<GenreListItemDto>? cached) && cached is not null)
+            return cached;
+
         var genres = await db.Genres.AsNoTracking()
             .Select(g => new { g.Name, g.Slug, Count = g.Artists.Count(a => a.LastSyncedUtc != null) })
             .Where(g => g.Count > 0)
@@ -242,8 +263,16 @@ public sealed partial class CatalogService(
             .Take(MaxGenres)
             .ToListAsync(cancellationToken);
 
-        return [.. genres.Select(g => new GenreListItemDto(g.Name, g.Slug, g.Count))];
+        IReadOnlyList<GenreListItemDto> result = [.. genres.Select(g => new GenreListItemDto(g.Name, g.Slug, g.Count))];
+        cache.Set("catalog:genres", result, CacheEntry(TimeSpan.FromMinutes(1)));
+        return result;
     }
+
+    private static MemoryCacheEntryOptions CacheEntry(TimeSpan duration) => new()
+    {
+        AbsoluteExpirationRelativeToNow = duration,
+        Size = 1,
+    };
 
     public async Task<BrowseRecordingsDto> BrowseRecordingsAsync(string? genre, string? decade, int offset, int? limit, CancellationToken cancellationToken)
     {
@@ -258,24 +287,23 @@ public sealed partial class CatalogService(
         if (decadeStart is { } start)
             query = query.Where(r => r.FirstReleaseYear >= start && r.FirstReleaseYear < start + 10);
 
-        var candidates = await query
-            .OrderByDescending(r => r.NotabilityScore)
-            .Take(BrowseCandidates)
-            .Select(ToRecordingSummary)
-            .ToListAsync(cancellationToken);
-
-        var ranked = RankForBrowse(candidates);
         var first = Math.Max(0, offset);
         var size = Math.Clamp(limit ?? BrowsePageSize, 1, BrowsePageSize);
-        var page = ranked.Skip(first).Take(size).ToList();
+        var rankedPage = await browseRecordingQuery.GetPageAsync(genre, decadeStart, first, size, cancellationToken);
+        var pageRows = await query
+            .Where(r => rankedPage.MusicBrainzIds.Contains(r.MusicBrainzId))
+            .Select(ToRecordingSummary)
+            .ToListAsync(cancellationToken);
+        var byMbid = pageRows.ToDictionary(recording => recording.Mbid);
+        var page = rankedPage.MusicBrainzIds.Select(mbid => byMbid[mbid]).ToList();
 
         return new BrowseRecordingsDto(
             genre,
             decadeStart is null ? null : $"{decadeStart}s",
             page,
             first,
-            ranked.Count,
-            HasMore: first + page.Count < ranked.Count);
+            rankedPage.Total,
+            HasMore: first + page.Count < rankedPage.Total);
     }
 
     /// <summary>

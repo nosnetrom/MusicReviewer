@@ -10,7 +10,16 @@ import { onScopeDispose, ref, shallowRef } from 'vue'
  * @param {{ interval?: number, until?: (data: T) => boolean, immediate?: boolean }} [options]
  *   `immediate: false` waits for the first `refresh()` call.
  */
-export function usePolling(load, { interval = 2000, until = () => true, immediate = true } = {}) {
+export function usePolling(
+  load,
+  {
+    interval = 2000,
+    maxInterval = 30_000,
+    jitterRatio = 0.2,
+    until = () => true,
+    immediate = true,
+  } = {},
+) {
   /** @type {import('vue').ShallowRef<T | null>} */
   const data = shallowRef(null)
   const error = shallowRef(null)
@@ -19,6 +28,18 @@ export function usePolling(load, { interval = 2000, until = () => true, immediat
   let timer = null
   let controller = null
   let generation = 0
+  let attempt = 0
+
+  function nextDelay(error) {
+    const exponential = Math.min(interval * 2 ** attempt, maxInterval)
+    attempt++
+    const jitter = exponential * (1 - jitterRatio + Math.random() * jitterRatio * 2)
+    return Math.max(Math.round(jitter), error?.retryAfterMs ?? 0)
+  }
+
+  function schedule(run, error) {
+    timer = setTimeout(() => tick(run), nextDelay(error))
+  }
 
   async function tick(run) {
     controller?.abort()
@@ -30,10 +51,11 @@ export function usePolling(load, { interval = 2000, until = () => true, immediat
       if (run !== generation) return
       data.value = value
       error.value = null
-      if (!until(value)) timer = setTimeout(() => tick(run), interval)
+      if (!until(value)) schedule(run)
     } catch (e) {
       if (run !== generation || e?.name === 'AbortError') return
       error.value = e
+      if (e?.status === 429 || e?.status >= 500 || e?.status == null) schedule(run, e)
     } finally {
       if (run === generation) loading.value = false
     }
@@ -49,6 +71,7 @@ export function usePolling(load, { interval = 2000, until = () => true, immediat
   /** Start over, e.g. after a filter changes. Keeps the current data visible until new data arrives. */
   function refresh() {
     stop()
+    attempt = 0
     tick(generation)
   }
 

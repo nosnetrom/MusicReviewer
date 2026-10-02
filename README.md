@@ -84,6 +84,8 @@ Catalog endpoints use a per-client token bucket: 10 initial requests, then one r
 
 The API-process limiter is not shared between replicas. Enforce an aggregate limit at the edge when scaling out. If a reverse proxy obscures the client address, configure trusted forwarded headers before relying on per-client limits; do not trust arbitrary `X-Forwarded-For` values.
 
+The MusicBrainz gateway and ingestion worker are also process-local. Scaling the API to multiple replicas creates multiple outbound MusicBrainz workers, each with its own rate limit, and can exceed MusicBrainz's per-IP limit. Before scaling out, move ingestion and the gateway into a single-instance worker process, and keep the API replicas on a shared edge rate limit.
+
 ### Catalog data
 
 - Artists, albums, tracks and personnel are imported from MusicBrainz the first time a page asks for them. The page shows "Importing…" and fills in as the data arrives.

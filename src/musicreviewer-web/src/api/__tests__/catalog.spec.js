@@ -28,6 +28,12 @@ describe('catalog api', () => {
     expect(calledUrl()).toBe('/api/browse/recordings')
   })
 
+  it('requests a page of artist recordings', async () => {
+    await getArtistRecordings('abc', { type: 'studio', sort: 'date', offset: 60, limit: 60 })
+
+    expect(calledUrl()).toBe('/api/artists/abc/recordings?type=studio&sort=date&offset=60&limit=60')
+  })
+
   it('treats ready and failed imports as settled', () => {
     expect(isSettled('ready')).toBe(true)
     expect(isSettled('failed')).toBe(true)

@@ -73,6 +73,24 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Artist_recordings_are_paged_without_duplicates()
+    {
+        var mbid = FakeMusicBrainz.MilesDavis;
+        await EventuallyAsync<ArtistDetailDto>($"/api/artists/{mbid}", a => a.SyncStatus == SyncStatus.Ready);
+
+        var first = await GetAsync<ArtistRecordingsDto>($"/api/artists/{mbid}/recordings?limit=10");
+        var second = await GetAsync<ArtistRecordingsDto>($"/api/artists/{mbid}/recordings?limit=10&offset=10");
+
+        Assert.Equal(27, first!.Total);
+        Assert.Equal(10, first.Recordings.Count);
+        Assert.True(first.HasMore);
+        Assert.Equal(10, second!.Offset);
+        Assert.Equal(10, second.Recordings.Count);
+        Assert.Equal(27, second.Total);
+        Assert.DoesNotContain(first.Recordings.Select(r => r.Mbid), id => second.Recordings.Any(r => r.Mbid == id));
+    }
+
+    [Fact]
     public async Task Imports_live_albums_only_when_asked_for()
     {
         var mbid = FakeMusicBrainz.MilesDavis;
@@ -257,6 +275,17 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     [InlineData("?sort=popularity")]
     [InlineData("?type=3")]
     public async Task Invalid_recording_filters_are_400(string query)
+    {
+        var response = await _client.GetAsync($"/api/artists/{FakeMusicBrainz.MilesDavis}/recordings{query}", Ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("?limit=0")]
+    [InlineData("?limit=61")]
+    [InlineData("?offset=-1")]
+    public async Task Invalid_artist_recording_paging_is_400(string query)
     {
         var response = await _client.GetAsync($"/api/artists/{FakeMusicBrainz.MilesDavis}/recordings{query}", Ct);
 
