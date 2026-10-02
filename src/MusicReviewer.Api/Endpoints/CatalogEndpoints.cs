@@ -6,9 +6,9 @@ public static class CatalogEndpoints
 {
     public static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder app)
     {
-        var api = app.MapGroup("/api").WithTags("Catalog");
+        var api = app.MapGroup("/api").WithTags("Catalog").RequireRateLimiting("catalog");
 
-        api.MapGet("/search", (string? q, CatalogService catalog, CancellationToken ct) => catalog.SearchAsync(q, ct))
+        api.MapGet("/search", SearchAsync)
             .WithSummary("Search artists: local matches plus a live MusicBrainz search.");
 
         api.MapGet("/search/suggestions", (CatalogService catalog, CancellationToken ct) => catalog.GetSearchSuggestionsAsync(ct))
@@ -32,6 +32,17 @@ public static class CatalogEndpoints
                 "Paged: offset (default 0) and limit (1–60, default 60).");
 
         return app;
+    }
+
+    private static async Task<IResult> SearchAsync(string? q, CatalogService catalog, CancellationToken ct)
+    {
+        if (q is { Length: > CatalogService.MaxSearchQueryLength })
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["q"] = [$"Must be {CatalogService.MaxSearchQueryLength} characters or fewer."],
+            });
+
+        return TypedResults.Ok(await catalog.SearchAsync(q, ct));
     }
 
     private static async Task<IResult> GetArtistRecordingsAsync(Guid mbid, string? type, string? sort, CatalogService catalog, CancellationToken ct)

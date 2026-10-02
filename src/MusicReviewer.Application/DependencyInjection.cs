@@ -10,7 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddOptions<CatalogOptions>().BindConfiguration(CatalogOptions.SectionName);
-        services.AddMemoryCache();
+        services.AddMemoryCache(options => options.SizeLimit = 1000);
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddScoped<CatalogService>();

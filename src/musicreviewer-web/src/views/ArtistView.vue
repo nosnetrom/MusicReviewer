@@ -9,6 +9,7 @@ import GlassPanel from '@/components/glass/GlassPanel.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
 import WikipediaSummary from '@/components/music/WikipediaSummary.vue'
 import { getArtist, getArtistRecordings, isSettled } from '@/api/catalog'
+import { friendlyApiMessage } from '@/api/client'
 import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
 import { usePolling } from '@/composables/usePolling'
 import { formatArtistType, formatYears, wikipediaUrl } from '@/utils/format'
@@ -78,6 +79,12 @@ const status = computed(
 )
 const currentFilter = computed(() => filters.find((f) => f.value === filter.value))
 const errorStatus = computed(() => artist.error.value?.status)
+const artistErrorMessage = computed(() =>
+  friendlyApiMessage(artist.error.value, 'We couldn’t load this artist right now.'),
+)
+const recordingsErrorMessage = computed(() =>
+  friendlyApiMessage(recordings.error.value, 'We couldn’t load these recordings right now.'),
+)
 
 useCoverBackdrop(() => {
   const top = list.value[0]
@@ -97,7 +104,7 @@ useCoverBackdrop(() => {
     title="MusicBrainz is unavailable"
     icon="disc"
   >
-    <p>We couldn’t load this artist right now.</p>
+    <p>{{ artistErrorMessage }}</p>
     <GlassButton variant="primary" @click="retry">Try again</GlassButton>
   </EmptyState>
 
@@ -188,6 +195,10 @@ useCoverBackdrop(() => {
         class="artist__notice"
         @retry="retry"
       />
+      <div v-if="recordings.error.value" class="artist__load-error" role="alert">
+        <p>{{ recordingsErrorMessage }}</p>
+        <GlassButton size="sm" @click="recordings.refresh">Try again</GlassButton>
+      </div>
 
       <EmptyState
         v-if="status === 'ready' && list.length === 0"

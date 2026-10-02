@@ -6,6 +6,7 @@ import EmptyState from '@/components/EmptyState.vue'
 import GlassSearchField from '@/components/glass/GlassSearchField.vue'
 import ArtistRow from '@/components/music/ArtistRow.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
+import { friendlyApiMessage } from '@/api/client'
 import { getFeatured, getSearchSuggestions } from '@/api/catalog'
 import { usePolling } from '@/composables/usePolling'
 import { createStableShuffle } from '@/utils/shuffle'
@@ -18,7 +19,7 @@ const search = (q) => router.push({ name: 'search', query: { q } })
 
 // One example musician per visit, picked from the catalog with jazz weighted up.
 const placeholder = ref('Try “Nina Simone”')
-usePolling(async ({ signal }) => {
+const { error: suggestionsError } = usePolling(async ({ signal }) => {
   const name = pickSuggestionForVisit(await getSearchSuggestions({ signal }))
   if (name) placeholder.value = `Try “${name}”`
 })
@@ -28,6 +29,13 @@ const { data: featured, error } = usePolling(({ signal }) => getFeatured({ signa
   interval: 10000,
   until: (f) => f.recordings.length >= 12,
 })
+
+const limitError = computed(() =>
+  [suggestionsError.value, error.value].find((e) => e?.status === 429 || e?.status === 503),
+)
+const limitErrorMessage = computed(() =>
+  limitError.value ? friendlyApiMessage(limitError.value, '') : '',
+)
 
 // A fresh random order on each visit, kept steady while the list above refreshes.
 const shuffle = createStableShuffle((r) => r.mbid)
@@ -59,6 +67,7 @@ const loaded = computed(() => featured.value !== null || error.value !== null)
 
     <section aria-labelledby="featured-heading">
       <h2 id="featured-heading">Essential albums</h2>
+      <p v-if="limitErrorMessage" class="home__notice" role="status">{{ limitErrorMessage }}</p>
       <EmptyState
         v-if="loaded && recordings.length === 0"
         title="The shelves are being stocked"
@@ -138,6 +147,11 @@ const loaded = computed(() => featured.value !== null || error.value !== null)
 /* Let rows shrink so long names and descriptions truncate instead of widening the list. */
 .home__artists > li {
   min-width: 0;
+}
+
+.home__notice {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-secondary);
 }
 
 /* Phones: logo sits centred above the text. */

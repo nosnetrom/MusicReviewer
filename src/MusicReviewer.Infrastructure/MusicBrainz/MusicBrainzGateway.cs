@@ -18,8 +18,16 @@ public sealed partial class MusicBrainzGateway(
     TimeProvider clock,
     ILogger<MusicBrainzGateway> logger) : BackgroundService
 {
-    private readonly Channel<WorkItem> _interactive = Channel.CreateUnbounded<WorkItem>();
-    private readonly Channel<WorkItem> _background = Channel.CreateUnbounded<WorkItem>();
+    private readonly Channel<WorkItem> _interactive = Channel.CreateBounded<WorkItem>(new BoundedChannelOptions(options.Value.InteractiveQueueCapacity)
+    {
+        SingleReader = true,
+        FullMode = BoundedChannelFullMode.Wait,
+    });
+    private readonly Channel<WorkItem> _background = Channel.CreateBounded<WorkItem>(new BoundedChannelOptions(options.Value.BackgroundQueueCapacity)
+    {
+        SingleReader = true,
+        FullMode = BoundedChannelFullMode.Wait,
+    });
     private readonly SemaphoreSlim _pending = new(0);
     private DateTimeOffset _nextSlot = DateTimeOffset.MinValue;
 

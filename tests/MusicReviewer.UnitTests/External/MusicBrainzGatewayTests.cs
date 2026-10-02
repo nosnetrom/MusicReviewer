@@ -136,4 +136,25 @@ public sealed class MusicBrainzGatewayTests : IAsyncLifetime
 
         Assert.Equal(["first", "kept"], _sent.Select(s => s.Name));
     }
+
+    [Fact]
+    public async Task Rejects_requests_when_a_priority_queue_is_full()
+    {
+        var gateway = new MusicBrainzGateway(
+            Options.Create(new MusicBrainzOptions { InteractiveQueueCapacity = 1, BackgroundQueueCapacity = 1 }),
+            _clock,
+            NullLogger<MusicBrainzGateway>.Instance);
+        var send = (CancellationToken _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+
+        try
+        {
+            _ = gateway.SendAsync(send, RequestPriority.Interactive, CancellationToken.None);
+            await Assert.ThrowsAsync<ExternalServiceUnavailableException>(
+                () => gateway.SendAsync(send, RequestPriority.Interactive, CancellationToken.None));
+        }
+        finally
+        {
+            gateway.Dispose();
+        }
+    }
 }

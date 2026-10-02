@@ -18,6 +18,10 @@ public sealed class IngestionOptions
 
     /// <summary>Delay before the first retry; each later retry waits 4× longer.</summary>
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(15);
+
+    public int MaxQueuedJobs { get; set; } = 1000;
+    public TimeSpan CompletedJobRetention { get; set; } = TimeSpan.FromDays(30);
+    public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromDays(1);
 }
 
 /// <summary>
@@ -31,12 +35,20 @@ public sealed partial class IngestionWorker(
     IOptions<IngestionOptions> options,
     ILogger<IngestionWorker> logger) : BackgroundService
 {
+    private DateTimeOffset _nextCleanup = DateTimeOffset.MinValue;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await RecoverInterruptedJobsAsync(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            if (clock.GetUtcNow() >= _nextCleanup)
+            {
+                await PruneCompletedJobsAsync(stoppingToken);
+                _nextCleanup = clock.GetUtcNow() + options.Value.CleanupInterval;
+            }
+
             var ranJob = false;
             try
             {
@@ -62,6 +74,28 @@ public sealed partial class IngestionWorker(
                     break;
                 }
             }
+        }
+    }
+
+    private async Task PruneCompletedJobsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var scope = scopes.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<MusicReviewerDbContext>();
+            var cutoff = (clock.GetUtcNow() - options.Value.CompletedJobRetention).UtcDateTime;
+            await db.IngestionJobs
+                .Where(j => (j.Status == IngestionJobStatus.Succeeded || j.Status == IngestionJobStatus.Failed)
+                    && j.CompletedUtc < cutoff)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogWorkerError(logger, ex);
         }
     }
 

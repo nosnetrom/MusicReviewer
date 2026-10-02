@@ -20,4 +20,8 @@ public sealed class MusicBrainzOptions
 
     /// <summary>Timeout for a single HTTP attempt; MusicBrainz can be slow under load.</summary>
     public TimeSpan AttemptTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Maximum requests waiting in each MusicBrainz priority queue.</summary>
+    public int InteractiveQueueCapacity { get; set; } = 100;
+    public int BackgroundQueueCapacity { get; set; } = 500;
 }

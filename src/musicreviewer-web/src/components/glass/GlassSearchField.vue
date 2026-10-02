@@ -6,6 +6,7 @@ import AppIcon from '@/components/AppIcon.vue'
 const props = defineProps({
   label: { type: String, default: 'Search' },
   placeholder: { type: String, default: 'Artists, albums…' },
+  maxLength: { type: Number, default: 120 },
   size: { type: String, default: 'md', validator: (v) => ['md', 'lg'].includes(v) },
   autofocus: { type: Boolean, default: false },
 })
@@ -46,6 +47,7 @@ defineExpose({ focus: () => input.value?.focus() })
       enterkeyhint="search"
       autocomplete="off"
       spellcheck="false"
+      :maxlength="props.maxLength"
       :placeholder="props.placeholder"
       :autofocus="props.autofocus"
       class="search-field__input"

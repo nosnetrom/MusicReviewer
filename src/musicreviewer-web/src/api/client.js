@@ -17,6 +17,13 @@ export class ApiError extends Error {
   }
 }
 
+export function friendlyApiMessage(error, fallback) {
+  if (error?.status === 429)
+    return "You're making requests too quickly. Please wait a moment and try again."
+  if (error?.status === 503) return 'The catalog is busy right now. Please try again shortly.'
+  return fallback
+}
+
 /**
  * GET a JSON resource from the API.
  * @template T

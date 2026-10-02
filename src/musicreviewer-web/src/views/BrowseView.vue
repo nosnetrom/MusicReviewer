@@ -6,6 +6,7 @@ import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassChip from '@/components/glass/GlassChip.vue'
 import RecordingGrid from '@/components/music/RecordingGrid.vue'
 import { browseRecordings, getGenres } from '@/api/catalog'
+import { friendlyApiMessage } from '@/api/client'
 import { useLoadMore } from '@/composables/useLoadMore'
 import { usePolling } from '@/composables/usePolling'
 
@@ -18,7 +19,12 @@ const router = useRouter()
 const genre = computed(() => (typeof route.query.genre === 'string' ? route.query.genre : null))
 const decade = computed(() => (typeof route.query.decade === 'string' ? route.query.decade : null))
 
-const { data: genres } = usePolling(({ signal }) => getGenres({ signal }))
+const { data: genres, error: genresError } = usePolling(({ signal }) => getGenres({ signal }))
+const genresLimitMessage = computed(() =>
+  genresError.value?.status === 429 || genresError.value?.status === 503
+    ? friendlyApiMessage(genresError.value, '')
+    : '',
+)
 
 const albums = useLoadMore(async ({ offset, signal }) => {
   const page = await browseRecordings(
@@ -57,6 +63,7 @@ const remaining = computed(() => albums.total.value - albums.items.value.length)
         </GlassChip>
       </div>
     </section>
+    <p v-if="genresLimitMessage" class="browse__error" role="status">{{ genresLimitMessage }}</p>
 
     <section aria-labelledby="decades-heading">
       <h2 id="decades-heading" class="browse__label">Decades</h2>
@@ -77,7 +84,7 @@ const remaining = computed(() => albums.total.value - albums.items.value.length)
       title="Couldn’t load albums"
       icon="disc"
     >
-      <p>Please try again in a moment.</p>
+      <p>{{ friendlyApiMessage(albums.error.value, 'Please try again in a moment.') }}</p>
       <GlassButton variant="primary" @click="albums.reset()">Try again</GlassButton>
     </EmptyState>
 
@@ -97,7 +104,9 @@ const remaining = computed(() => albums.total.value - albums.items.value.length)
 
       <div v-if="albums.hasMore.value || albums.error.value" class="browse__more">
         <p v-if="albums.error.value" class="browse__error" role="alert">
-          Couldn’t load more albums. Please try again.
+          {{
+            friendlyApiMessage(albums.error.value, 'Couldn’t load more albums. Please try again.')
+          }}
         </p>
         <GlassButton
           size="lg"

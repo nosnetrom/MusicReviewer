@@ -5,6 +5,7 @@ import EmptyState from '@/components/EmptyState.vue'
 import GlassSearchField from '@/components/glass/GlassSearchField.vue'
 import ArtistRow from '@/components/music/ArtistRow.vue'
 import { searchArtists } from '@/api/catalog'
+import { friendlyApiMessage } from '@/api/client'
 import { useDebounced } from '@/composables/useDebounced'
 
 const route = useRoute()
@@ -20,6 +21,7 @@ const field = useTemplateRef('field')
 const results = ref(null)
 const loading = ref(false)
 const failed = ref(false)
+const failure = ref(null)
 let controller = null
 
 async function run(text) {
@@ -35,10 +37,14 @@ async function run(text) {
   const current = (controller = new AbortController())
   loading.value = true
   failed.value = false
+  failure.value = null
   try {
     results.value = await searchArtists(q, { signal: current.signal })
   } catch (e) {
-    if (e?.name !== 'AbortError') failed.value = true
+    if (e?.name !== 'AbortError') {
+      failure.value = e
+      failed.value = true
+    }
   } finally {
     if (controller === current) loading.value = false
   }
@@ -88,7 +94,7 @@ onBeforeUnmount(() => controller?.abort())
     </EmptyState>
 
     <EmptyState v-else-if="failed" title="Search isn’t working right now" icon="disc">
-      <p>Please try again in a moment.</p>
+      <p>{{ friendlyApiMessage(failure, 'Please try again in a moment.') }}</p>
     </EmptyState>
 
     <ul

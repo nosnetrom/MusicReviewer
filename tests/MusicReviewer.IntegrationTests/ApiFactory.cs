@@ -34,6 +34,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting($"ConnectionStrings:{DependencyInjection.ConnectionStringName}", _sql.GetConnectionString());
         builder.UseSetting("Catalog:SeedFeaturedArtistsOnStartup", "false");
         builder.UseSetting("Ingestion:PollInterval", "00:00:00.200");
+        builder.UseSetting("RateLimiting:TokenLimit", "10000");
 
         builder.ConfigureTestServices(services =>
         {

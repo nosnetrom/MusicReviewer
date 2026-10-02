@@ -11,6 +11,7 @@ import ListenLinks from '@/components/music/ListenLinks.vue'
 import TrackList from '@/components/music/TrackList.vue'
 import WikipediaSummary from '@/components/music/WikipediaSummary.vue'
 import { getRecording, isSettled } from '@/api/catalog'
+import { friendlyApiMessage } from '@/api/client'
 import { useCoverBackdrop } from '@/composables/useCoverBackdrop'
 import { usePolling } from '@/composables/usePolling'
 import { wikipediaUrl } from '@/utils/format'
@@ -57,7 +58,7 @@ useCoverBackdrop(
   </EmptyState>
 
   <EmptyState v-else-if="error && !recording" title="MusicBrainz is unavailable" icon="disc">
-    <p>We couldn’t load this recording right now.</p>
+    <p>{{ friendlyApiMessage(error, 'We couldn’t load this recording right now.') }}</p>
     <GlassButton variant="primary" @click="refresh">Try again</GlassButton>
   </EmptyState>
 

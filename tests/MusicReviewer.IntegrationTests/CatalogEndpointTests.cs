@@ -126,6 +126,17 @@ public class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory
     }
 
     [Fact]
+    public async Task Search_rejects_queries_over_the_configured_length()
+    {
+        var query = new string('x', CatalogService.MaxSearchQueryLength + 1);
+        var response = await _client.GetAsync($"/api/search?q={Uri.EscapeDataString(query)}", Ct);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(Ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("q", problem!.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Search_suggestions_list_imported_artists_with_their_genres()
     {
         await EventuallyAsync<ArtistDetailDto>($"/api/artists/{FakeMusicBrainz.MilesDavis}", a => a.SyncStatus == SyncStatus.Ready);

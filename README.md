@@ -78,6 +78,12 @@ npm run dev
 
 To point the web dev server at an API on another port, set `API_PROXY_TARGET` (for example `http://localhost:5090`) before `npm run dev`.
 
+### Public API limits
+
+Catalog endpoints use a per-client token bucket: 10 initial requests, then one request per second. Excess requests receive `429 Too Many Requests` with `Retry-After`; saturated MusicBrainz or ingestion queues return `503 Service Unavailable`. Search queries are limited to 120 characters. Queue capacities and request limits are configurable in `appsettings.json`.
+
+The API-process limiter is not shared between replicas. Enforce an aggregate limit at the edge when scaling out. If a reverse proxy obscures the client address, configure trusted forwarded headers before relying on per-client limits; do not trust arbitrary `X-Forwarded-For` values.
+
 ### Catalog data
 
 - Artists, albums, tracks and personnel are imported from MusicBrainz the first time a page asks for them. The page shows "Importing…" and fills in as the data arrives.

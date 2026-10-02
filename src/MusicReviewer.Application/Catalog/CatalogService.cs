@@ -27,6 +27,7 @@ public sealed partial class CatalogService(
     private const int MaxSearchResults = 12;
     private const int MaxSearchSuggestions = 500;
     private const int MaxFeaturedRecordings = 24;
+    public const int MaxSearchQueryLength = 120;
     /// <summary>Albums per browse page; "Load more" fetches the next page.</summary>
     public const int BrowsePageSize = 60;
     public const int MaxBrowseRecordingsPerArtist = 3;
@@ -98,7 +99,11 @@ public sealed partial class CatalogService(
         try
         {
             var results = await musicBrainz.SearchArtistsAsync(text, MaxSearchResults, timeout.Token);
-            cache.Set(key, results, options.Value.SearchCacheDuration);
+            cache.Set(key, results, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = options.Value.SearchCacheDuration,
+                Size = 1,
+            });
             return (results, true);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)

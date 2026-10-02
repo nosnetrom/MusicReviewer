@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, getJson } from '../client'
+import { ApiError, friendlyApiMessage, getJson } from '../client'
 
 const jsonResponse = (status, body) =>
   new Response(JSON.stringify(body), {
@@ -27,5 +27,16 @@ describe('getJson', () => {
     expect(error.status).toBe(404)
     expect(error.message).toBe('Not Found')
     expect(error.problem).toEqual(problem)
+  })
+})
+
+describe('friendlyApiMessage', () => {
+  it('explains rate limiting and service saturation in user-facing language', () => {
+    expect(friendlyApiMessage({ status: 429 }, 'Fallback')).toMatch(/wait a moment/i)
+    expect(friendlyApiMessage({ status: 503 }, 'Fallback')).toMatch(/catalog is busy/i)
+  })
+
+  it('uses the supplied fallback for unrelated errors', () => {
+    expect(friendlyApiMessage({ status: 404 }, 'Not found')).toBe('Not found')
   })
 })

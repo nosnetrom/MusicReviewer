@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MusicReviewer.Application.Abstractions;
 using MusicReviewer.Application.Ingestion;
 using MusicReviewer.Domain.Ingestion;
 using MusicReviewer.Infrastructure.Persistence;
@@ -27,7 +29,11 @@ public sealed class IngestionSignal : IDisposable
     public void Dispose() => _semaphore.Dispose();
 }
 
-public sealed class IngestionScheduler(MusicReviewerDbContext db, IngestionSignal signal, TimeProvider clock) : IIngestionScheduler
+public sealed class IngestionScheduler(
+    MusicReviewerDbContext db,
+    IngestionSignal signal,
+    TimeProvider clock,
+    IOptions<IngestionOptions> options) : IIngestionScheduler
 {
     public async Task EnqueueAsync(
         IngestionJobType type,
@@ -48,6 +54,10 @@ public sealed class IngestionScheduler(MusicReviewerDbContext db, IngestionSigna
             signal.Notify();
             return;
         }
+
+        var queued = await db.IngestionJobs.CountAsync(j => j.Status == IngestionJobStatus.Queued, cancellationToken);
+        if (queued >= options.Value.MaxQueuedJobs)
+            throw new ExternalServiceUnavailableException("Catalog");
 
         var now = clock.GetUtcNow().UtcDateTime;
         var job = new IngestionJob
