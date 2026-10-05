@@ -38,13 +38,13 @@ The API applies EF migrations only in Development. Apply production migrations i
 
 ## 3. Deploy the frontend
 
-Set `VITE_API_BASE_URL` to the public App Service URL when building the Vue application. The variable is embedded in the frontend bundle at build time. Deploy `src/musicreviewer-web` with `npm ci` and `npm run build`, using `dist` as the output directory.
+Set the GitHub repository variable `MUSICREVIEWER_API_BASE_URL` to the public App Service URL. The Static Web Apps workflow passes it as `VITE_API_BASE_URL` while building the Vue application; Vite embeds it in the frontend bundle. The workflow runs `npm ci` and `npm run build` from `src/musicreviewer-web` and deploys the resulting `dist` directory.
 
 Configure the Static Web App's GitHub integration or a GitHub Actions deployment workflow. The API's CORS origin must match the deployed frontend origin exactly.
 
 ## 4. Deploy the API
 
-Add a GitHub Actions deployment workflow alongside the existing CI workflow. Use GitHub Actions OpenID Connect federation to authenticate to Azure, publish the API in Release configuration, apply database migrations, then deploy the published output to the Web App. Avoid committing publish profiles, connection strings, or credentials.
+The `main_musicreviewer.yml` workflow restores and publishes `src/MusicReviewer.Api/MusicReviewer.Api.csproj` in Release configuration, then deploys `./publish` to the App Service. It uses the App Service publish profile stored in the `AZUREAPPSERVICE_PUBLISHPROFILE_20E33666FA434A4DB69CAF973C122F9F` GitHub secret. Avoid committing publish profiles, connection strings, or credentials. Apply production database migrations separately before deployment; this workflow does not run migrations.
 
 Enable Always On so the ASP.NET Core hosted ingestion worker continues processing while the site is idle. Keep the App Service at one instance. Use the health endpoint for a basic availability check and retain platform logs only as long as needed to control costs.
 

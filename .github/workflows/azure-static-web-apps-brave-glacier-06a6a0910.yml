@@ -22,6 +22,22 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/musicreviewer-web
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: src/musicreviewer-web
+        env:
+          VITE_API_BASE_URL: ${{ vars.MUSICREVIEWER_API_BASE_URL }}
+
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
@@ -40,9 +56,10 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./src" # App source code path
-          api_location: "./src/MusicReviewer.Api" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
+          app_location: "./src/musicreviewer-web/dist"
+          api_location: ""
+          output_location: ""
+          skip_app_build: true
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
 
