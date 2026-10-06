@@ -95,10 +95,10 @@ In Development the OpenAPI document is at http://localhost:5080/openapi/v1.json,
 
 | Endpoint | Returns |
 |---|---|
-| `GET /api/search?q=` | Artists: local matches plus a live MusicBrainz search |
+| `GET /api/search?q=` | Artists: local matches plus a live MusicBrainz search. `q` is at most 120 characters |
 | `GET /api/search/suggestions` | Imported artist names and genres, used as example searches |
 | `GET /api/artists/{mbid}` | Artist details; the first request queues the discography import |
-| `GET /api/artists/{mbid}/recordings?type=&sort=` | Recordings. `type`: `studio` (default), `ep`, `live`, `compilation`, `all`. `sort`: `notability` (default), `date` |
+| `GET /api/artists/{mbid}/recordings?type=&sort=&offset=&limit=` | A page of recordings, up to 60. `type`: `studio` (default), `ep`, `live`, `compilation`, `all`. `sort`: `notability` (default), `date` |
 | `GET /api/recordings/{mbid}` | Recording details, track list and personnel |
 | `GET /api/browse/featured` | Featured artists for Home |
 | `GET /api/browse/recordings?genre=&decade=&offset=&limit=` | Studio albums by genre slug and/or decade (`1970s`), paged up to 60 |
@@ -149,6 +149,13 @@ C# style is set in `.editorconfig`, and the .NET analyzers run at `latest-recomm
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and every pull request. It builds and tests the .NET solution, and it lints, format-checks, tests and builds the web app.
 
+Pushing to `main` also deploys:
+
+- [`main_musicreviewer.yml`](.github/workflows/main_musicreviewer.yml) builds the API and deploys it to Azure App Service.
+- [`azure-static-web-apps-*.yml`](.github/workflows/) builds the web app and deploys it to Azure Static Web Apps. It also builds pull requests to `main`.
+
+See [Prod_Deployment.md](Prod_Deployment.md) for the production setup.
+
 ## Database migrations
 
 `dotnet-ef` is pinned as a local tool in `dotnet-tools.json`:
@@ -172,7 +179,9 @@ The API applies pending migrations on startup in Development.
 | `tests/MusicReviewer.UnitTests` | xUnit v3 unit tests, with recorded API responses in `Fixtures/` |
 | `tests/MusicReviewer.IntegrationTests` | API tests against a Testcontainers SQL Server |
 | `docs/PLAN.md` | Architecture, roadmap and decisions |
-| `.github/workflows` | GitHub Actions CI |
+| `Prod_Deployment.md` | Azure production setup and costs |
+| `Monetization.md` | Monetization options |
+| `.github/workflows` | GitHub Actions CI and Azure deployment |
 | `compose.yaml` | SQL Server 2022 container for local development on macOS or Linux |
 
 ## Attribution
