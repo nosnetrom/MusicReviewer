@@ -1,50 +1,50 @@
 # musicreviewer-web
 
-This template should help get you started developing with Vue 3 in Vite.
+The MusicReviewer front end: a Vue 3 single-page app built with Vite, in plain JavaScript (`<script setup>` single-file components, JSDoc for types), with Vue Router and Pinia.
 
-## Recommended IDE Setup
+For the full project setup (API, database, tests), see the [root README](../../README.md).
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Develop
 
-## Recommended Browser Setup
+The API must be running on http://localhost:5080 (`dotnet run --project src/MusicReviewer.Api` from the repo root).
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
 npm install
+npm run dev       # http://localhost:5173; /api is proxied to the API
 ```
 
-### Compile and Hot-Reload for Development
+| Variable | Used by | Purpose |
+|---|---|---|
+| `API_PROXY_TARGET` | `npm run dev` | Proxies `/api` to an API on another address. Default: `http://localhost:5080` |
+| `VITE_API_BASE_URL` | `npm run build` | Base URL of the deployed API. Leave it empty locally. See `.env.example` |
 
-```sh
-npm run dev
-```
+## Scripts
 
-### Compile and Minify for Production
+| Command | Does |
+|---|---|
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` / `npm run preview` | Production build into `dist/`, and a local preview of it |
+| `npm run test:unit` | Vitest in watch mode (add `-- --run` for a single run, as CI does) |
+| `npm run lint` | oxlint, then ESLint, fixing what they can |
+| `npm run format` | Prettier on `src/` |
+| `npm run lint:check` / `npm run format:check` | Check-only versions, run by CI |
 
-```sh
-npm run build
-```
+## Layout
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+| Path | Contents |
+|---|---|
+| `src/api` | API client functions |
+| `src/views` | Route-level pages |
+| `src/router` | Route table |
+| `src/stores` | Pinia stores |
+| `src/components` | App-wide pieces: logo, icons, empty and sync states |
+| `src/components/glass` | Liquid Glass design-system components (see `docs/PLAN.md` §6) |
+| `src/components/music` | Artist, recording and track components |
+| `src/composables` | Shared composition functions |
+| `src/utils` | Pure helpers |
+| `src/styles` | Global CSS and design tokens |
+| `public/` | Icons, web manifest and `staticwebapp.config.json` for Azure Static Web Apps |
 
-```sh
-npm run test:unit
-```
+Tests sit next to the code they cover in `__tests__` folders.
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+The [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) extension is recommended for VS Code.

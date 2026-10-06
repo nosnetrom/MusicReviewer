@@ -1,7 +1,7 @@
 # Local SQL Server for development on macOS or Linux (LocalDB is Windows-only).
 #   1. Put a strong password in .env (git-ignored):  MSSQL_SA_PASSWORD=<password>
 #   2. docker compose up -d
-#   3. Point the API at it; see "Database on macOS or Linux" in README.md.
+#   3. Point the API at it; see "macOS or Linux: SQL Server in Docker" in README.md.
 # Data lives in the "musicreviewer-sql" volume; `docker compose down -v` deletes it.
 services:
   sql:

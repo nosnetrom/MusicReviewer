@@ -10,6 +10,17 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap.
 
 Development works on Windows, macOS and Linux. The only difference is the local database: see [Database](#database).
 
+## Quick start
+
+On Windows with Visual Studio installed (it provides LocalDB), no setup beyond the [prerequisites](#prerequisites) is needed:
+
+```bash
+dotnet run --project src/MusicReviewer.Api                      # terminal 1: API on :5080
+cd src/musicreviewer-web && npm install && npm run dev          # terminal 2: web on :5173
+```
+
+Open http://localhost:5173. On macOS or Linux, [start SQL Server in Docker](#macos-or-linux-sql-server-in-docker) first.
+
 ## Prerequisites
 
 - .NET 10 SDK (the version is pinned in `global.json`)
@@ -76,7 +87,22 @@ npm install
 npm run dev
 ```
 
-To point the web dev server at an API on another port, set `API_PROXY_TARGET` (for example `http://localhost:5090`) before `npm run dev`.
+To point the web dev server at an API on another port, set `API_PROXY_TARGET` (for example `http://localhost:5090`) before `npm run dev`. Deployed builds instead call the API at `VITE_API_BASE_URL` (see `src/musicreviewer-web/.env.example`).
+
+### API
+
+In Development the OpenAPI document is at http://localhost:5080/openapi/v1.json, and `GET /api/health` reports the health checks.
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/search?q=` | Artists: local matches plus a live MusicBrainz search |
+| `GET /api/search/suggestions` | Imported artist names and genres, used as example searches |
+| `GET /api/artists/{mbid}` | Artist details; the first request queues the discography import |
+| `GET /api/artists/{mbid}/recordings?type=&sort=` | Recordings. `type`: `studio` (default), `ep`, `live`, `compilation`, `all`. `sort`: `notability` (default), `date` |
+| `GET /api/recordings/{mbid}` | Recording details, track list and personnel |
+| `GET /api/browse/featured` | Featured artists for Home |
+| `GET /api/browse/recordings?genre=&decade=&offset=&limit=` | Studio albums by genre slug and/or decade (`1970s`), paged up to 60 |
+| `GET /api/genres` | Genres for browsing |
 
 ### Catalog data
 
@@ -98,12 +124,33 @@ Tests use recorded MusicBrainz, Wikidata and Wikipedia responses (`tests/MusicRe
 dotnet test --project tests/MusicReviewer.IntegrationTests -- --explicit only
 ```
 
-## Database migrations
+## Lint and format
+
+The web app uses oxlint, ESLint and Prettier. CI runs the check-only versions, so run these before pushing:
 
 ```bash
-dotnet tool install --global dotnet-ef   # once per machine
+cd src/musicreviewer-web
+npm run lint            # oxlint + ESLint, fixing what they can
+npm run format          # Prettier
+npm run lint:check && npm run format:check   # what CI runs
+```
+
+C# style is set in `.editorconfig`, and the .NET analyzers run at `latest-recommended`. Analyzer warnings are errors in CI (where `CI=true`) but not in local builds, so a clean local build can still fail CI. Fix any warnings before pushing.
+
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and every pull request. It builds and tests the .NET solution, and it lints, format-checks, tests and builds the web app.
+
+## Database migrations
+
+`dotnet-ef` is pinned as a local tool in `dotnet-tools.json`:
+
+```bash
+dotnet tool restore   # once per clone
 dotnet ef migrations add <Name> --project src/MusicReviewer.Infrastructure --startup-project src/MusicReviewer.Api --output-dir Persistence/Migrations
 ```
+
+The API applies pending migrations on startup in Development.
 
 ## Project layout
 
@@ -114,7 +161,9 @@ dotnet ef migrations add <Name> --project src/MusicReviewer.Infrastructure --sta
 | `src/MusicReviewer.Domain` | Entities and domain rules |
 | `src/MusicReviewer.Infrastructure` | EF Core, migrations, external API clients |
 | `src/musicreviewer-web` | Vue SPA |
-| `tests/` | xUnit v3 unit and integration tests |
+| `tests/MusicReviewer.UnitTests` | xUnit v3 unit tests, with recorded API responses in `Fixtures/` |
+| `tests/MusicReviewer.IntegrationTests` | API tests against a Testcontainers SQL Server |
+| `docs/PLAN.md` | Architecture, roadmap and decisions |
 | `.github/workflows` | GitHub Actions CI |
 | `compose.yaml` | SQL Server 2022 container for local development on macOS or Linux |
 
