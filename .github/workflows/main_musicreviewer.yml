@@ -27,13 +27,16 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/MusicReviewer.Api \
+             && dotnet tool install -g dotnet-ef --version 10.* \
+             && dotnet restore --runtime linux-x64 \
+             && dotnet ef migrations bundle --runtime linux-x64 -o ${{env.DOTNET_ROOT}}/MusicReviewer.Api/migrationsbundle
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{env.DOTNET_ROOT}}/MusicReviewer.Api
 
   deploy:
     runs-on: ubuntu-latest

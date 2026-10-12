@@ -9,6 +9,17 @@ using MusicReviewer.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsProduction())
+{
+    var connectionString = builder.Configuration["AZURE_SQL_CONNECTIONSTRING"];
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("AZURE_SQL_CONNECTIONSTRING must be configured in Production.");
+    }
+
+    builder.Configuration["ConnectionStrings:MusicReviewer"] = connectionString;
+}
+
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<CatalogExceptionHandler>();
 builder.Services.AddOpenApi();

@@ -28,7 +28,7 @@ Use the Azure-provided domains initially; add a custom domain only when needed.
 Set these App Service application settings:
 
 - `ASPNETCORE_ENVIRONMENT=Production`
-- `ConnectionStrings__MusicReviewer` to the Azure SQL connection string using Microsoft Entra managed identity authentication.
+- `AZURE_SQL_CONNECTIONSTRING` to the Azure SQL connection string using Microsoft Entra managed identity authentication.
 - `Cors__AllowedOrigins__0` to the exact Static Web App origin, such as `https://<app>.azurestaticapps.net`.
 - `Catalog__SeedFeaturedArtistsOnStartup=false` after the initial catalog import.
 
