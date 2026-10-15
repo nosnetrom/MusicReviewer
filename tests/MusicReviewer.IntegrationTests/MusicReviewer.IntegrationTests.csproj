@@ -10,4 +10,8 @@
     <ProjectReference Include="..\..\src\MusicReviewer.Api\MusicReviewer.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.12" />
+  </ItemGroup>
+
 </Project>
