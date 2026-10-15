@@ -21,6 +21,26 @@ jobs:
       - name: Publish API
         run: dotnet publish src/MusicReviewer.Api/MusicReviewer.Api.csproj -c Release -o ./publish
 
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: src/musicreviewer-web/.nvmrc
+          cache: npm
+          cache-dependency-path: src/musicreviewer-web/package-lock.json
+
+      - name: Build web app
+        working-directory: src/musicreviewer-web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Add web app to API publish output
+        run: |
+          mkdir -p ./publish/wwwroot
+          cp -r src/musicreviewer-web/dist/. ./publish/wwwroot/      
+
+
+
       - name: Build migrations bundle
         run: |
           dotnet tool restore

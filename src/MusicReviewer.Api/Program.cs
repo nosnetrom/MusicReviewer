@@ -66,6 +66,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
+// added v.0.0.2
+builder.Services.AddControllers();
+
 // The SPA is served from a different origin (Static Web Apps) in deployed environments.
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
@@ -87,5 +90,25 @@ app.UseRateLimiter();
 
 app.MapHealthEndpoints();
 app.MapCatalogEndpoints();
+
+// added v.0.0.2
+app.UseDefaultFiles();
+app.UseStaticFiles();
+// app.UseStaticFiles(new StaticFileOptions
+// {
+//     OnPrepareResponse = ctx =>
+//     {
+//         var path = ctx.File.Name;
+//         ctx.Context.Response.Headers.CacheControl = path == "index.html"
+//             ? "no-cache"
+//             : "public,max-age=31536000,immutable";
+//     }
+// });
+app.MapControllers();
+// Anything that isn't a file or an API route goes to the Vue app
+//app.MapFallbackToFile("{*path:regex(^(?!api/).*$)}", "index.html");
+app.MapFallbackToFile("{*path:nonfile}", "index.html");
+
+//app.MapGet("/", () => "API is running");
 
 app.Run();
