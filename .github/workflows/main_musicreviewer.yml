@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version-file: src/musicreviewer-web/.nvmrc
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: src/musicreviewer-web/package-lock.json
 
