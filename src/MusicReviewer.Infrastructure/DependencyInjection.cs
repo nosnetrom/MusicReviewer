@@ -41,7 +41,12 @@ public static class DependencyInjection
                 ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
 
             options.UseSqlServer(connectionString, sql => sql
-                .EnableRetryOnFailure()
+                .EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null
+                )
+                .CommandTimeout(60)
                 .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
         services.AddScoped<IMusicReviewerDbContext>(sp => sp.GetRequiredService<MusicReviewerDbContext>());
