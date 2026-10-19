@@ -28,7 +28,7 @@ namespace MusicReviewer.Infrastructure.Ingestion;
 //     }
 // }
 
-public sealed class CatalogStartupService(
+public sealed partial class CatalogStartupService(
     IServiceScopeFactory scopes,
     IOptions<CatalogOptions> options,
     ILogger<CatalogStartupService> logger) : BackgroundService
@@ -54,11 +54,13 @@ public sealed class CatalogStartupService(
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            // Shutting down; nothing to log.
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Catalog startup step {Step} failed; continuing.", typeof(T).Name);
+            LogStepFailed(logger, ex, typeof(T).Name);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Catalog startup step {Step} failed.")]
+    private static partial void LogStepFailed(ILogger logger, Exception exception, string step);
 }
