@@ -105,8 +105,9 @@ app.UseStaticFiles();
 //     }
 // });
 app.MapControllers();
+// Unknown API routes are 404s, not the Vue app; the literal "api" segment outranks the catch-all below.
+app.MapFallback("/api/{**path}", () => Results.NotFound());
 // Anything that isn't a file or an API route goes to the Vue app
-//app.MapFallbackToFile("{*path:regex(^(?!api/).*$)}", "index.html");
 app.MapFallbackToFile("{*path:nonfile}", "index.html");
 
 //app.MapGet("/", () => "API is running");

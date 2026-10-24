@@ -2,12 +2,11 @@
 
 ## Low-cost production baseline
 
-- **Frontend:** Azure Static Web Apps Free plan.
-- **API and background workers:** one Linux Azure App Service on Basic B1, with Always On enabled and autoscale disabled. Keep the API, ingestion worker, and MusicBrainz gateway in this single instance for now.
-- **Database:** Azure SQL Database Basic, in the same region as the App Service. Confirm its storage and performance limits fit the catalog. Compare with serverless SQL if usage is intermittent and cold starts are acceptable.
-- **Identity:** use the App Service managed identity for SQL access. Use a separate deployment identity with schema-change permissions for migrations.
+- **App Service:** one Linux Azure App Service on Basic B1, with Always On enabled and autoscale disabled. It serves the API and the Vue frontend from the same origin, and runs the ingestion worker and MusicBrainz gateway. Keep everything in this single instance for now.
+- **Database:** Azure SQL Database Basic, in the same region as the App Service. Confirm its storage and performance limits fit the catalog. Serverless is not cheaper for this app: the ingestion worker queries the database every few seconds, so a serverless database never auto-pauses and bills continuously.
+- **Database access:** SQL authentication with two dedicated database users: one for the running app with read/write access only, and one for the deployment workflow with schema-change rights. Use the server admin login only for administration.
 
-This avoids paying for separate worker, cache, message broker, API gateway, and monitoring services at launch. Prices vary by region and Azure offer; validate the current estimate in the Azure Pricing Calculator and create a budget alert.
+This avoids paying for separate frontend hosting, worker, cache, message broker, API gateway, and monitoring services at launch. Prices vary by region and Azure offer; validate the current estimate in the Azure Pricing Calculator and create a budget alert.
 
 Do not scale the API above one instance yet. Each process currently owns its own MusicBrainz rate limiter, gateway, and ingestion worker. Multiple replicas could exceed MusicBrainz's per-IP request limit.
 
@@ -15,38 +14,81 @@ Do not scale the API above one instance yet. Each process currently owns its own
 
 Create a resource group in one region, then create:
 
-1. An Azure SQL logical server and a Basic database named `MusicReviewer`.
-2. A Linux App Service plan and Web App on Basic B1.
-3. An Azure Static Web App on the Free plan.
+1. An Azure SQL logical server with SQL authentication enabled, and a Basic database.
+2. A Linux App Service plan and Web App on Basic B1, with the .NET 10 runtime stack.
 
-Enable the Web App's system-assigned managed identity. Configure the SQL server's Microsoft Entra administrator, create a database user for the Web App identity, and grant only the permissions the running API needs. Give the deployment identity separate permissions to apply migrations.
+Connect to the database (not `master`) as the server admin and create the two users:
 
-Use the Azure-provided domains initially; add a custom domain only when needed.
+```sql
+-- Used by the running app.
+CREATE USER [musicreviewer-app] WITH PASSWORD = '<strong password>';
+ALTER ROLE db_datareader ADD MEMBER [musicreviewer-app];
+ALTER ROLE db_datawriter ADD MEMBER [musicreviewer-app];
 
-## 2. Configure the API
+-- Used by the deployment workflow to apply migrations.
+CREATE USER [musicreviewer-migrator] WITH PASSWORD = '<strong password>';
+ALTER ROLE db_ddladmin ADD MEMBER [musicreviewer-migrator];
+ALTER ROLE db_datareader ADD MEMBER [musicreviewer-migrator];
+ALTER ROLE db_datawriter ADD MEMBER [musicreviewer-migrator];
+```
 
-Set these App Service application settings:
+These are contained database users, so their connection strings must name this database. Avoid semicolons in the passwords; they break connection strings.
 
-- `ASPNETCORE_ENVIRONMENT=Production`
-- `AZURE_SQL_CONNECTIONSTRING` to the Azure SQL connection string using Microsoft Entra managed identity authentication.
-- `Cors__AllowedOrigins__0` to the exact Static Web App origin, such as `https://<app>.azurestaticapps.net`.
+Use the Azure-provided domain initially; add a custom domain only when needed.
+
+## 2. Configure the App Service
+
+Set these under the Web App's **Settings → Environment variables → App settings** tab:
+
+- `ASPNETCORE_ENVIRONMENT=Production` (also the default when unset).
+- `AZURE_SQL_CONNECTIONSTRING` to the app user's connection string:
+  `Server=tcp:<server>.database.windows.net,1433;Database=<database>;User ID=musicreviewer-app;Password=<password>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`
+- `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, so the per-client API rate limiter sees each visitor's IP rather than App Service's proxy.
 - `Catalog__SeedFeaturedArtistsOnStartup=false` after the initial catalog import.
 
-Keep `RateLimiting`, `MusicBrainz`, and `Ingestion` settings at their configured defaults initially. Confirm forwarded client IP handling behind App Service's proxy so the per-client API limiter does not treat every visitor as the same IP. Trust forwarded headers only from the hosting proxy.
+Put `AZURE_SQL_CONNECTIONSTRING` on the **App settings** tab, not the **Connection strings** tab. App Service renames entries on the Connection strings tab, and the app stops at startup in Production if it can't find `AZURE_SQL_CONNECTIONSTRING`.
 
-The API applies EF migrations only in Development. Apply production migrations in the deployment workflow before releasing the API, using an idempotent migration script or migration bundle and the deployment identity. Do not enable automatic production migrations at application startup.
+Don't set `Cors__AllowedOrigins__*`. The frontend and API share an origin, so CORS isn't needed.
 
-## 3. Deploy the frontend
+Keep `RateLimiting`, `MusicBrainz`, and `Ingestion` settings at their configured defaults initially.
 
-Set the GitHub repository variable `MUSICREVIEWER_API_BASE_URL` to the public App Service URL. The Static Web Apps workflow passes it as `VITE_API_BASE_URL` while building the Vue application; Vite embeds it in the frontend bundle. The workflow runs `npm ci` and `npm run build` from `src/musicreviewer-web` and deploys the resulting `dist` directory.
+## 3. Configure GitHub
 
-Configure the Static Web App's GitHub integration or a GitHub Actions deployment workflow. The API's CORS origin must match the deployed frontend origin exactly.
+The `main_musicreviewer.yml` workflow signs in to Azure with OpenID Connect, using the `AZUREAPPSERVICE_CLIENTID_*`, `AZUREAPPSERVICE_TENANTID_*`, and `AZUREAPPSERVICE_SUBSCRIPTIONID_*` secrets that the App Service Deployment Center created. Add:
 
-## 4. Deploy the API
+- **Secret** `AZURE_SQL_MIGRATIONS_CONNECTIONSTRING`: the migrator user's connection string, in the same form as above with `User ID=musicreviewer-migrator`.
+- **Variable** `AZURE_RESOURCE_GROUP`: the resource group containing the SQL server.
+- **Variable** `AZURE_SQL_SERVER_NAME`: the SQL server name, without `.database.windows.net`.
 
-The `main_musicreviewer.yml` workflow restores and publishes `src/MusicReviewer.Api/MusicReviewer.Api.csproj` in Release configuration, then deploys `./publish` to the App Service. It uses the App Service publish profile stored in the `AZUREAPPSERVICE_PUBLISHPROFILE_20E33666FA434A4DB69CAF973C122F9F` GitHub secret. Avoid committing publish profiles, connection strings, or credentials. Apply production database migrations separately before deployment; this workflow does not run migrations.
+Give the deployment identity (the app registration in `AZUREAPPSERVICE_CLIENTID_*`) the **SQL Server Contributor** role on the SQL server so the workflow can manage firewall rules:
 
-Enable Always On so the ASP.NET Core hosted ingestion worker continues processing while the site is idle. Keep the App Service at one instance. Use the health endpoint for a basic availability check and retain platform logs only as long as needed to control costs.
+```
+az role assignment create --assignee <client-id> --role "SQL Server Contributor" \
+  --scope $(az sql server show -g <resource-group> -n <server> --query id -o tsv)
+```
+
+Do not set `VITE_API_BASE_URL`. When it is empty, the frontend calls `/api` on its own origin.
+
+Never commit connection strings or credentials.
+
+## 4. Deploy
+
+Every push to `main` (or a manual run) of `main_musicreviewer.yml` does the following:
+
+1. **CI:** runs `ci.yml` (build, tests, lint, format check). Nothing deploys unless it passes. Pull requests run `ci.yml` on their own.
+2. **Build:** publishes the API in Release, builds the Vue app and copies `dist` into the API's `wwwroot`, and builds a self-contained EF Core migrations bundle.
+3. **Deploy:**
+   1. Signs in to Azure.
+   2. Adds a temporary SQL firewall rule for the runner's IP, named `github-actions-<run id>-<attempt>`.
+   3. Applies pending migrations with the bundle and the migrator connection string. If the new firewall rule isn't active yet (error 40615), it retries every 30 seconds, up to six attempts.
+   4. Removes the firewall rule, even if migrations failed or the run was cancelled.
+   5. Deploys the app to App Service, only if migrations succeeded.
+
+Only one deployment runs at a time. The app never applies migrations itself in Production; it does so only in Development.
+
+The App Service serves the Vue app for any path that isn't a file or an API route, so client-side routes like `/artists/<id>` load directly. Unknown `/api/...` paths return 404.
+
+Enable Always On so the hosted ingestion worker keeps processing while the site is idle. Keep the App Service at one instance. Retain platform logs only as long as needed to control costs.
 
 ## 5. Seed and verify the catalog
 
@@ -54,15 +96,18 @@ The featured-artist seeder is disabled by default. For the initial catalog, use 
 
 Verify that:
 
-- The Static Web App loads and its API URL points to the production Web App.
-- `/api/health` reports healthy and the API can connect to Azure SQL.
-- CORS permits requests from the Static Web App and rejects unconfigured origins.
-- Search works, an uncached artist import completes, and recording details eventually load.
+- The deployment run's migrations step succeeded, and no `github-actions-*` firewall rules remain on the SQL server.
+- The site loads, and refreshing on a deep link such as an artist page still works.
+- `/api/health` reports healthy. This only proves the app can connect to SQL, not that the schema is current.
+- Search works (database reads), and an uncached artist import completes and its recording details eventually load (database writes).
+- Rapid requests from two different clients are rate-limited separately.
 - The App Service remains at one instance and MusicBrainz calls remain serialized.
+
+If the app can't reach the database, check the Web App's **Log stream**: "Login failed" means a wrong user or password; "permission was denied" means a missing role.
 
 ## Cost controls and later scaling
 
-Prefer one region and the smallest database tier that meets measured needs. Azure SQL Basic is predictable; serverless may cost less for intermittent use but can add resume latency and still incurs storage costs. Avoid adding Key Vault, Application Insights, Azure API Management, Front Door, Redis, or Service Bus until a specific operational need justifies them. Managed identity avoids a SQL password secret; basic platform logs and Azure budgets are sufficient to start.
+Prefer one region and the smallest database tier that meets measured needs. Avoid adding Key Vault, Application Insights, Azure API Management, Front Door, Redis, or Service Bus until a specific operational need justifies them. Basic platform logs and Azure budgets are sufficient to start. Moving SQL access to Microsoft Entra managed identity later would remove the stored database passwords.
 
 Before scaling the API to multiple instances, move the ingestion worker and MusicBrainz gateway into a dedicated single-instance process. Keep jobs in the existing SQL-backed queue initially; a separate broker is not required until measurements show the database queue is a bottleneck. Route live MusicBrainz searches through that worker too, then add a shared edge rate limit for all API replicas. Until this change is made, scale the database or the single API instance vertically rather than horizontally.
 

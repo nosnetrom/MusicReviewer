@@ -5,9 +5,20 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Never run two deployments (and their migrations) against production at once.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   build:
     runs-on: ubuntu-latest
+    needs: ci
     permissions:
       contents: read
 
@@ -20,7 +31,6 @@ jobs:
 
       - name: Publish API
         run: dotnet publish src/MusicReviewer.Api/MusicReviewer.Api.csproj -c Release -o ./publish
-
 
       - uses: actions/setup-node@v5
         with:
@@ -37,9 +47,7 @@ jobs:
       - name: Add web app to API publish output
         run: |
           mkdir -p ./publish/wwwroot
-          cp -r src/musicreviewer-web/dist/. ./publish/wwwroot/      
-
-
+          cp -r src/musicreviewer-web/dist/. ./publish/wwwroot/
 
       - name: Build migrations bundle
         run: |
@@ -73,10 +81,18 @@ jobs:
       contents: read
 
     steps:
+      # Separate directories so the migrations bundle isn't deployed with the app.
       - name: Download API artifact
         uses: actions/download-artifact@v5
         with:
           name: .net-app
+          path: ./app
+
+      - name: Download migrations bundle
+        uses: actions/download-artifact@v5
+        with:
+          name: migrations-bundle
+          path: ./migrations
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -85,10 +101,67 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B3246502CC284F67B3407E7324A3AC7A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_21A09E51775C4FE4BD601774CBA615C0 }}
 
+      # The SQL server's firewall doesn't know GitHub's runners, so allow this runner's IP for the
+      # migrations only. The Azure login identity needs rights to manage the server's firewall rules.
+      - name: Open SQL firewall for this runner
+        id: open-firewall
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          SQL_SERVER: ${{ vars.AZURE_SQL_SERVER_NAME }}
+          RULE_NAME: github-actions-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if [ -z "$RESOURCE_GROUP" ] || [ -z "$SQL_SERVER" ]; then
+            echo "::error::Set the AZURE_RESOURCE_GROUP and AZURE_SQL_SERVER_NAME repository variables."
+            exit 1
+          fi
+          ip=$(curl -fsS --retry 3 https://api.ipify.org)
+          echo "Allowing $ip through the $SQL_SERVER firewall as $RULE_NAME"
+          # Record the rule before creating it so the close step cleans up even if creation half-fails.
+          echo "rule=$RULE_NAME" >> "$GITHUB_OUTPUT"
+          az sql server firewall-rule create \
+            --resource-group "$RESOURCE_GROUP" --server "$SQL_SERVER" --name "$RULE_NAME" \
+            --start-ip-address "$ip" --end-ip-address "$ip" --output none
+
+      # Migrate before deploying so the new build never runs against an old schema.
+      - name: Apply database migrations
+        env:
+          SQL_CONNECTION_STRING: ${{ secrets.AZURE_SQL_MIGRATIONS_CONNECTIONSTRING }}
+        run: |
+          if [ -z "$SQL_CONNECTION_STRING" ]; then
+            echo "::error::The AZURE_SQL_MIGRATIONS_CONNECTIONSTRING secret is not set."
+            exit 1
+          fi
+          # Artifacts don't preserve the executable bit.
+          chmod +x ./migrations/migrationsbundle
+          # A new firewall rule can take a few minutes to apply; until then logins fail with error 40615.
+          for attempt in 1 2 3 4 5 6; do
+            if ./migrations/migrationsbundle --connection "$SQL_CONNECTION_STRING" > migrate.log 2>&1; then
+              cat migrate.log
+              exit 0
+            fi
+            cat migrate.log
+            if ! grep -q 40615 migrate.log || [ "$attempt" -eq 6 ]; then
+              exit 1
+            fi
+            echo "Firewall rule not active yet; retrying in 30 seconds."
+            sleep 30
+          done
+
+      - name: Close SQL firewall for this runner
+        if: always() && steps.open-firewall.outputs.rule != ''
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          SQL_SERVER: ${{ vars.AZURE_SQL_SERVER_NAME }}
+          RULE_NAME: ${{ steps.open-firewall.outputs.rule }}
+        run: |
+          az sql server firewall-rule delete \
+            --resource-group "$RESOURCE_GROUP" --server "$SQL_SERVER" --name "$RULE_NAME" \
+            || echo "::warning::Could not delete firewall rule $RULE_NAME on $SQL_SERVER; delete it by hand."
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'MusicReviewer'
           slot-name: 'Production'
-          package: .
+          package: ./app
