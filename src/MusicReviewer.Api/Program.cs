@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using MusicReviewer.Api;
 using MusicReviewer.Api.Endpoints;
@@ -19,6 +20,17 @@ if (builder.Environment.IsProduction())
 
     builder.Configuration["ConnectionStrings:MusicReviewer"] = connectionString;
 }
+
+// App Service's front ends terminate TLS and forward requests from private addresses, adding the
+// visitor's IP to X-Forwarded-For. Trust the header only from those ranges so the per-client rate
+// limiter below partitions by visitor rather than by front end.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("10.0.0.0/8"));
+    options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("172.16.0.0/12"));
+    options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("192.168.0.0/16"));
+});
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<CatalogExceptionHandler>();
@@ -76,6 +88,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 

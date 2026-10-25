@@ -62,13 +62,13 @@ jobs:
             --output ./migrations/migrationsbundle
 
       - name: Upload API artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: .net-app
           path: ./publish
 
       - name: Upload migrations bundle
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: migrations-bundle
           path: ./migrations
@@ -83,19 +83,19 @@ jobs:
     steps:
       # Separate directories so the migrations bundle isn't deployed with the app.
       - name: Download API artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: .net-app
           path: ./app
 
       - name: Download migrations bundle
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: migrations-bundle
           path: ./migrations
 
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_83BD8D316D714843BDC7CBD94E650DBF }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B3246502CC284F67B3407E7324A3AC7A }}
