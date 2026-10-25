@@ -150,8 +150,8 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
 
 /*
  * Phones: a bottom tab bar with stacked icon + label. The brand is hidden (the top-left
- * home link replaces it), and the three tabs plus the theme button each get an equal
- * quarter of the bar, so all four are evenly spaced.
+ * home link replaces it), and the four tabs plus the theme button each get an equal
+ * fifth of the bar, so all five are evenly spaced.
  */
 @media (max-width: 640px) {
   .nav,
@@ -159,7 +159,7 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
     top: auto;
     bottom: max(var(--space-3), env(safe-area-inset-bottom));
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 4fr 1fr;
     gap: 0;
     width: calc(100% - 2 * var(--space-4));
     height: 4rem;
@@ -172,7 +172,7 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
 
   .nav__links {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     justify-items: center;
     gap: 0;
     margin: 0;
@@ -186,7 +186,8 @@ const themeLabel = computed(() => `Theme: ${preferences.theme}. Switch theme`)
     flex-direction: column;
     gap: 2px;
     height: 3.25rem;
-    padding: 0 var(--space-4);
+    /* Narrow enough that five labels fit side by side on a 320px-wide phone. */
+    padding: 0 var(--space-2);
     font-size: 0.6875rem;
   }
 }

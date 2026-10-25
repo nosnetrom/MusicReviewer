@@ -36,6 +36,12 @@ const router = createRouter({
       meta: { title: 'Recording' },
     },
     {
+      path: '/about',
+      name: 'about',
+      component: () => import('../views/AboutView.vue'),
+      meta: { title: 'About' },
+    },
+    {
       path: '/design',
       name: 'design',
       component: () => import('../views/DesignSystemView.vue'),

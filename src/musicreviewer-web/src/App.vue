@@ -14,6 +14,7 @@ const links = [
   { to: '/', label: 'Home', icon: 'home', exact: true, title: 'MusicReviewer Home' },
   { to: '/browse', label: 'Browse', icon: 'browse' },
   { to: '/search', label: 'Search', icon: 'search' },
+  { to: '/about', label: 'About', icon: 'info' },
 ]
 
 const isDev = import.meta.env.DEV

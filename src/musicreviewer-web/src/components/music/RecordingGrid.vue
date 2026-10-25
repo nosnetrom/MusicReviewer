@@ -65,6 +65,14 @@ const subtitle = (r) =>
   min-width: 0;
 }
 
+/* Many phones are too narrow for two 9.5rem columns, so always use two there. */
+@media (max-width: 480px) {
+  .recording-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+}
+
 .placeholder {
   padding: var(--space-2);
 }
