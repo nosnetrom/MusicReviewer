@@ -126,6 +126,9 @@ jobs:
       - name: Apply database migrations
         env:
           SQL_CONNECTION_STRING: ${{ secrets.AZURE_SQL_MIGRATIONS_CONNECTIONSTRING }}
+          # The bundle builds the DbContext through the API's startup code, which requires this
+          # setting before --connection is applied.
+          ConnectionStrings__MusicReviewer: ${{ secrets.AZURE_SQL_MIGRATIONS_CONNECTIONSTRING }}
         run: |
           if [ -z "$SQL_CONNECTION_STRING" ]; then
             echo "::error::The AZURE_SQL_MIGRATIONS_CONNECTIONSTRING secret is not set."
