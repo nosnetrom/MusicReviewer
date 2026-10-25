@@ -4,7 +4,7 @@
 
 - **App Service:** one Linux Azure App Service on Basic B1, with Always On enabled and autoscale disabled. It serves the API and the Vue frontend from the same origin, and runs the ingestion worker and MusicBrainz gateway. Keep everything in this single instance for now.
 - **Database:** Azure SQL Database Basic, in the same region as the App Service. Confirm its storage and performance limits fit the catalog. Serverless is not cheaper for this app: the ingestion worker queries the database every few seconds, so a serverless database never auto-pauses and bills continuously.
-- **Database access:** SQL authentication with two dedicated database users: one for the running app with read/write access only, and one for the deployment workflow with schema-change rights. Use the server admin login only for administration.
+- **Database access:** SQL authentication with two dedicated database users: one for the running app with read/write access only, and one for the deployment workflow with schema-change rights. Use the server admin login only for administration. The app's connection string is stored in Azure Key Vault and referenced from an App Service setting.
 
 This avoids paying for separate frontend hosting, worker, cache, message broker, API gateway, and monitoring services at launch. Prices vary by region and Azure offer; validate the current estimate in the Azure Pricing Calculator and create a budget alert.
 
@@ -41,14 +41,34 @@ Use the Azure-provided domain initially; add a custom domain only when needed.
 Set these under the Web App's **Settings → Environment variables → App settings** tab:
 
 - `ASPNETCORE_ENVIRONMENT=Production` (also the default when unset).
-- `AZURE_SQL_CONNECTIONSTRING` to the app user's connection string:
-  `Server=tcp:<server>.database.windows.net,1433;Database=<database>;User ID=musicreviewer-app;Password=<password>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`
-- `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, so the per-client API rate limiter sees each visitor's IP rather than App Service's proxy.
-- `Catalog__SeedFeaturedArtistsOnStartup=false` after the initial catalog import.
+- `AZURE_SQL_CONNECTIONSTRING` as a Key Vault reference, such as `@Microsoft.KeyVault(SecretUri=https://<vault>.vault.azure.net/secrets/<secret-name>/)`. Leave the version off the URI so the app uses the latest version.
+- `Catalog__SeedFeaturedArtistsOnStartup`: see step 5.
 
 Put `AZURE_SQL_CONNECTIONSTRING` on the **App settings** tab, not the **Connection strings** tab. App Service renames entries on the Connection strings tab, and the app stops at startup in Production if it can't find `AZURE_SQL_CONNECTIONSTRING`.
 
 Don't set `Cors__AllowedOrigins__*`. The frontend and API share an origin, so CORS isn't needed.
+
+Don't set `ASPNETCORE_FORWARDEDHEADERS_ENABLED`. The app already reads visitor IPs from App Service's forwarded headers, trusting them only from private network ranges, so the per-client rate limiter works without it.
+
+### Database connection string in Key Vault
+
+The Key Vault secret holds the app user's connection string:
+
+```
+Server=tcp:<server>.database.windows.net,1433;Initial Catalog=<database>;User ID=musicreviewer-app;Password=<password>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+```
+
+The Web App's system-assigned managed identity needs the **Key Vault Secrets User** role on the vault (or a **Get** secrets access policy). Under **Environment variables**, the setting should show a green "Key vault Reference" source; selecting it shows the resolution status.
+
+To change the connection string, for example to rotate the password, add a new version of the secret. App Service caches Key Vault values for up to 24 hours, and **a restart alone does not fetch the new version.** Force a fetch, then restart:
+
+```
+id=$(az webapp show -g <resource-group> -n <app-name> --query id -o tsv)
+az rest --method post --url "https://management.azure.com$id/config/configreferences/appsettings/refresh?api-version=2022-03-01"
+az webapp restart -g <resource-group> -n <app-name>
+```
+
+Any app setting change made with **Apply** in the portal also triggers a fetch.
 
 Keep `RateLimiting`, `MusicBrainz`, and `Ingestion` settings at their configured defaults initially.
 
@@ -92,7 +112,17 @@ Enable Always On so the hosted ingestion worker keeps processing while the site 
 
 ## 5. Seed and verify the catalog
 
-The featured-artist seeder is disabled by default. For the initial catalog, use a small curated featured list and enable `Catalog:SeedFeaturedArtistsOnStartup` for a controlled import. MusicBrainz is limited to approximately one request per second, so importing the full featured list can take a long time. Disable seeding after the initial import is complete.
+The featured-artist seeder is disabled by default, so a new database starts with an empty catalog. MusicBrainz is limited to approximately one request per second, so importing the full featured list can take a long time; for a quicker start, shorten `Catalog:FeaturedArtists` first.
+
+To run the import:
+
+1. In the Web App's **Settings → Environment variables → App settings** tab, select **+ Add**, enter the name `Catalog__SeedFeaturedArtistsOnStartup` and the value `true`, then select **Apply** and confirm. The app restarts and queues the featured artists for import.
+2. Watch progress in the **Log stream**, or as artists appear on the home page.
+3. When the import is complete, change the value to `false` (or delete the setting) and **Apply** again, so later restarts don't queue the list again.
+
+From the command line, use `az webapp config appsettings set -g <resource-group> -n <app-name> --settings Catalog__SeedFeaturedArtistsOnStartup=true`, and `=false` afterwards.
+
+Changing any app setting restarts the app, and the site returns errors for roughly 2–4 minutes while the new process starts. Change settings when a short outage is acceptable. Deployments restart the app the same way.
 
 Verify that:
 
@@ -103,11 +133,11 @@ Verify that:
 - Rapid requests from two different clients are rate-limited separately.
 - The App Service remains at one instance and MusicBrainz calls remain serialized.
 
-If the app can't reach the database, check the Web App's **Log stream**: "Login failed" means a wrong user or password; "permission was denied" means a missing role.
+If the app can't reach the database, check the Web App's **Log stream**: "Login failed for user '…'" means a wrong user or password; "permission was denied" means a missing role. If the user named in "Login failed" isn't the one in the current Key Vault secret, the app is still using a cached value; force a fetch as described in step 2.
 
 ## Cost controls and later scaling
 
-Prefer one region and the smallest database tier that meets measured needs. Avoid adding Key Vault, Application Insights, Azure API Management, Front Door, Redis, or Service Bus until a specific operational need justifies them. Basic platform logs and Azure budgets are sufficient to start. Moving SQL access to Microsoft Entra managed identity later would remove the stored database passwords.
+Prefer one region and the smallest database tier that meets measured needs. Key Vault, which holds the database connection string, costs very little at this volume. Avoid adding Application Insights, Azure API Management, Front Door, Redis, or Service Bus until a specific operational need justifies them. Basic platform logs and Azure budgets are sufficient to start. Moving SQL access to Microsoft Entra managed identity later would remove the stored database passwords.
 
 Before scaling the API to multiple instances, move the ingestion worker and MusicBrainz gateway into a dedicated single-instance process. Keep jobs in the existing SQL-backed queue initially; a separate broker is not required until measurements show the database queue is a bottleneck. Route live MusicBrainz searches through that worker too, then add a shared edge rate limit for all API replicas. Until this change is made, scale the database or the single API instance vertically rather than horizontally.
 
