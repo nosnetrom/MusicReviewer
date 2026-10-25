@@ -1,5 +1,5 @@
 /** How much more often jazz artists are suggested than others. */
-export const JAZZ_WEIGHT = 3
+export const JAZZ_WEIGHT = 2
 
 const LAST_SHOWN_KEY = 'musicreviewer:last-suggestion'
 

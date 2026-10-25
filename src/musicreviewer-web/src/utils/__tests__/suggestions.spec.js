@@ -28,7 +28,7 @@ const artists = [
 ]
 
 describe('pickSuggestion', () => {
-  it('picks jazz artists about three times as often as others', () => {
+  it(`picks jazz artists about ${JAZZ_WEIGHT} times as often as others`, () => {
     const random = seeded(42)
     const counts = {}
     for (let i = 0; i < 30000; i++) {
