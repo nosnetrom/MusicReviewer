@@ -429,17 +429,38 @@ public sealed partial class CatalogService(
         if (!needsImport && !stale)
             return;
 
-        await scheduler.EnqueueAsync(
-            IngestionJobType.ArtistDiscography,
-            artist.Id,
-            priority: stale ? JobPriority.Background : priority,
-            cancellationToken: cancellationToken);
-
-        if (needsImport)
+        if (stale)
         {
-            artist.SyncStatus = SyncStatus.Syncing;
-            await db.SaveChangesAsync(cancellationToken);
+            await scheduler.EnqueueAsync(IngestionJobType.ArtistDiscography, artist.Id, priority: JobPriority.Background, cancellationToken: cancellationToken);
+            return;
         }
+
+        // Claim the import in the database so that when several requests view a new artist at once,
+        // exactly one queues it. Saving this entity instead could overwrite the Ready status of an
+        // import that finished in the meantime, leaving the artist stuck in Syncing with no job to run.
+        var previous = artist.SyncStatus;
+        var claimed = await db.Artists
+            .Where(a => a.Id == artist.Id && a.SyncStatus == previous)
+            .ExecuteUpdateAsync(s => s.SetProperty(a => a.SyncStatus, SyncStatus.Syncing), cancellationToken);
+
+        if (claimed == 1)
+        {
+            try
+            {
+                await scheduler.EnqueueAsync(IngestionJobType.ArtistDiscography, artist.Id, priority: priority, cancellationToken: cancellationToken);
+            }
+            catch
+            {
+                // Not queued (the queue may be full): release the claim so a later view can try again.
+                await db.Artists
+                    .Where(a => a.Id == artist.Id && a.SyncStatus == SyncStatus.Syncing)
+                    .ExecuteUpdateAsync(s => s.SetProperty(a => a.SyncStatus, previous), CancellationToken.None);
+                throw;
+            }
+        }
+
+        // Pick up the current status (Syncing, or Ready if the import already finished) without marking it modified.
+        await db.ChangeTracker.Entries<Artist>().Single(e => e.Entity == artist).ReloadAsync(cancellationToken);
     }
 
     private async Task<SyncStatus> EnsureCategoryAsync(Artist artist, ReleaseCategories category, CancellationToken cancellationToken)
